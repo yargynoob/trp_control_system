@@ -25,14 +25,28 @@ export async function GET(
         p.status,
         p.address,
         p.client_name,
-        COUNT(d.id) as defects_count,
-        COUNT(DISTINCT ur.user_id) as team_size,
-        MAX(d.found_date) as last_defect_date
+        COALESCE(defect_stats.defects_count, 0) as defects_count,
+        COALESCE(team_stats.team_size, 0) as team_size,
+        defect_stats.last_defect_date
       FROM projects p
-      LEFT JOIN defects d ON p.id = d.project_id AND d.is_active = true
-      LEFT JOIN user_roles ur ON p.id = ur.project_id
-      WHERE p.id = $1 AND p.is_active = true
-      GROUP BY p.id, p.name, p.description, p.status, p.address, p.client_name;
+      LEFT JOIN (
+        SELECT 
+          project_id,
+          COUNT(*) as defects_count,
+          MAX(found_date) as last_defect_date
+        FROM defects 
+        WHERE is_active = true AND project_id = $1
+        GROUP BY project_id
+      ) defect_stats ON p.id = defect_stats.project_id
+      LEFT JOIN (
+        SELECT 
+          project_id,
+          COUNT(DISTINCT user_id) as team_size
+        FROM user_roles 
+        WHERE project_id = $1
+        GROUP BY project_id
+      ) team_stats ON p.id = team_stats.project_id
+      WHERE p.id = $1 AND p.is_active = true;
     `, [id]);
 
     if (result.rows.length === 0) {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
+import { Navigation } from '@/components/Navigation';
 import { MetricCards } from '@/components/MetricCards';
 import { CriticalDefects } from '@/components/CriticalDefects';
 import { RecentActions } from '@/components/RecentActions';
@@ -88,16 +89,15 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-white">
       <Header />
+      <Navigation 
+        activeTab="dashboard" 
+        projectSelected={!!project} 
+        projectName={project?.name}
+      />
       
       <div className="bg-white border-b border-[#dee2e6] px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <button 
-              onClick={() => router.push('/organizations')}
-              className="text-[#007bff] hover:text-[#0056b3] mb-2 text-sm"
-            >
-              ← Назад к предприятиям
-            </button>
             <h1 className="text-xl font-bold text-[#212529]">
               {project.name}
             </h1>
