@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { EditDefectModal } from "@/components/EditDefectModal";
 
 interface Defect {
   id: string;
@@ -43,6 +44,8 @@ export function DefectsTable({ projectId, searchQuery, refreshKey }: DefectsTabl
   const [defects, setDefects] = useState<Defect[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedDefect, setSelectedDefect] = useState<Defect | null>(null);
 
   useEffect(() => {
     const fetchDefects = async () => {
@@ -64,6 +67,24 @@ export function DefectsTable({ projectId, searchQuery, refreshKey }: DefectsTabl
 
     fetchDefects();
   }, [projectId, searchQuery, refreshKey]);
+
+  const handleDefectClick = (defect: Defect) => {
+    setSelectedDefect(defect);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSuccess = async () => {
+    // Перезагружаем данные дефектов после успешного редактирования
+    try {
+      const response = await fetch(`/api/dashboard/${projectId}/defects?search=${encodeURIComponent(searchQuery)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDefects(data);
+      }
+    } catch (err) {
+      console.error('Error refreshing defects:', err);
+    }
+  };
 
   const handleDeleteDefect = async (defectId: string) => {
     if (window.confirm(`Вы уверены, что хотите удалить дефект TRP-${defectId}?`)) {
@@ -119,64 +140,85 @@ export function DefectsTable({ projectId, searchQuery, refreshKey }: DefectsTabl
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b border-[#dee2e6]">
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">ID</th>
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Название</th>
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Статус</th>
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Приоритет</th>
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Ответственный</th>
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Местоположение</th>
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Дата</th>
-            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          {defects.map((defect) =>
-          <tr key={defect.id} className="border-b border-[#f8f9fa] hover:bg-[#f8f9fa]">
-              <td className="py-3 px-4 text-sm font-medium text-[#007bff]">
-                TRP-{defect.id}
-              </td>
-              <td className="py-3 px-4">
-                <div>
-                  <div className="text-sm font-medium text-[#212529]">{defect.title}</div>
-                  <div className="text-xs text-[#6c757d] truncate max-w-xs">{defect.description}</div>
-                </div>
-              </td>
-              <td className="py-3 px-4">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[defect.status]}`}>
-                  {defect.statusDisplay}
-                </span>
-              </td>
-              <td className="py-3 px-4">
-                <span className={`text-sm font-medium ${priorityColors[defect.priority]}`}>
-                  {defect.priorityDisplay}
-                </span>
-              </td>
-              <td className="py-3 px-4 text-sm text-[#212529]">
-                {defect.assignee || 'Не назначен'}
-              </td>
-              <td className="py-3 px-4 text-sm text-[#6c757d] max-w-xs truncate">
-                {defect.location}
-              </td>
-              <td className="py-3 px-4 text-sm text-[#6c757d]">
-                {defect.createdAt ? new Date(defect.createdAt).toLocaleDateString('ru-RU') : '—'}
-              </td>
-              <td className="py-3 px-4">
-                <button
-                onClick={() => handleDeleteDefect(defect.id)}
-                className="text-[#dc3545] hover:text-[#b02a37] text-lg font-bold p-1"
-                title="Удалить дефект">
-
-                  ×
-                </button>
-              </td>
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b border-[#dee2e6]">
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">ID</th>
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Название</th>
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Статус</th>
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Приоритет</th>
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Ответственный</th>
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Местоположение</th>
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Дата</th>
+              <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Действия</th>
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>);
+          </thead>
+          <tbody>
+            {defects.map((defect) =>
+            <tr 
+              key={defect.id} 
+              className="border-b border-[#f8f9fa] hover:bg-[#f8f9fa] cursor-pointer"
+              onClick={() => handleDefectClick(defect)}
+            >
+                <td className="py-3 px-4 text-sm font-medium text-[#007bff]">
+                  TRP-{defect.id}
+                </td>
+                <td className="py-3 px-4">
+                  <div>
+                    <div className="text-sm font-medium text-[#212529]">{defect.title}</div>
+                    <div className="text-xs text-[#6c757d] truncate max-w-xs">{defect.description}</div>
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[defect.status]}`}>
+                    {defect.statusDisplay}
+                  </span>
+                </td>
+                <td className="py-3 px-4">
+                  <span className={`text-sm font-medium ${priorityColors[defect.priority]}`}>
+                    {defect.priorityDisplay}
+                  </span>
+                </td>
+                <td className="py-3 px-4 text-sm text-[#212529]">
+                  {defect.assignee || 'Не назначен'}
+                </td>
+                <td className="py-3 px-4 text-sm text-[#6c757d] max-w-xs truncate">
+                  {defect.location}
+                </td>
+                <td className="py-3 px-4 text-sm text-[#6c757d]">
+                  {defect.createdAt ? new Date(defect.createdAt).toLocaleDateString('ru-RU') : '—'}
+                </td>
+                <td className="py-3 px-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Предотвращаем срабатывание клика по строке
+                      handleDeleteDefect(defect.id);
+                    }}
+                    className="text-[#dc3545] hover:text-[#b02a37] text-lg font-bold p-1"
+                    title="Удалить дефект"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Модальное окно редактирования дефекта */}
+      <EditDefectModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedDefect(null);
+        }}
+        onSuccess={handleEditSuccess}
+        defect={selectedDefect}
+      />
+    </>
+  );
 
 }

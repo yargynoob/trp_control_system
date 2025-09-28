@@ -147,7 +147,8 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full max-h-[85vh] p-0">
+       {/* className="max-w-4xl max-h-[90vh]" */}
+      <DialogContent className="max-w-4xl w-90 max-h-[85vh] p-0">
         <div className="p-6 border-b border-[#dee2e6]">
           <DialogHeader>
             <DialogTitle className="text-[20px] font-semibold text-[#212529]">
@@ -169,7 +170,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
           <div className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-[16px] font-semibold text-[#212529] uppercase tracking-wide mb-4">
-                ОСНОВНАЯ ИНФОРМАЦИЯ
+                Создание новой организации
               </h3>
 
               <div className="space-y-4">

@@ -4,20 +4,26 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Navigation } from '@/components/Navigation';
-import { MetricCards } from '@/components/MetricCards';
+import { Button } from '@/components/ui/button';
 import { CriticalDefects } from '@/components/CriticalDefects';
 import { RecentActions } from '@/components/RecentActions';
+import { EditOrganizationModal } from '@/components/EditOrganizationModal';
+import { MetricCards } from '@/components/MetricCards';
 
 interface Project {
   id: string;
   name: string;
   description: string;
-  status: "active" | "planning" | "completed";
   defectsCount: number;
   teamSize: number;
   lastDefectDate: string | null;
   address?: string;
   clientName?: string;
+  users?: Array<{
+    userId: string;
+    role: string;
+    userName: string;
+  }>;
 }
 
 export default function DashboardPage() {
@@ -28,6 +34,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -53,6 +60,18 @@ export default function DashboardPage() {
 
     fetchProject();
   }, [params.id]);
+
+  const handleEditSuccess = async () => {
+    try {
+      const response = await fetch(`/api/organizations/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProject(data);
+      }
+    } catch (err) {
+      console.error('Error refreshing project data:', err);
+    }
+  };
 
   const handleDeleteOrganization = async () => {
     if (!project) return;
@@ -131,6 +150,13 @@ export default function DashboardPage() {
               {project.description}
             </p>
           </div>
+          <Button
+            onClick={() => setIsEditModalOpen(true)}
+            variant="outline"
+            className="text-[#007bff] border-[#007bff] hover:bg-[#007bff] hover:text-white"
+          >
+            Редактировать
+          </Button>
         </div>
       </div>
 
@@ -143,7 +169,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Секция удаления организации */}
       <div className="px-3 md:px-6 pb-6 border-t border-[#dee2e6] pt-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-red-800 mb-2">
@@ -191,6 +216,19 @@ export default function DashboardPage() {
           }
         </div>
       </div>
+
+      <EditOrganizationModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
+        organization={project ? {
+          id: project.id,
+          name: project.name,
+          description: project.description || "",
+          address: project.address || "",
+          users: project.users || []
+        } : null}
+      />
     </main>);
 
 }

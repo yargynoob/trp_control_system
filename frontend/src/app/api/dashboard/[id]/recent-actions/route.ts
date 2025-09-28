@@ -18,67 +18,77 @@ request: Request,
 
     const result = await pool.query(`
       SELECT 
+        'defect_change' as source_type,
+        cl.id,
+        cl.defect_id,
+        cl.field_name,
+        cl.old_value,
+        cl.new_value,
+        cl.change_type,
+        cl.created_at,
+        d.title as defect_title,
+        (u.first_name || ' ' || u.last_name) as user_name
+      FROM change_logs cl
+      JOIN defects d ON cl.defect_id = d.id
+      JOIN users u ON cl.user_id = u.id
+      WHERE d.project_id = $1 AND cl.field_name != 'attachment'
+      
+      UNION ALL
+      
+      SELECT 
+        'defect_created' as source_type,
+        d.id,
         d.id as defect_id,
-        d.title,
+        'created' as field_name,
+        null as old_value,
+        d.title as new_value,
+        'create' as change_type,
         d.created_at,
-        d.updated_at,
-        ds.name as status,
-        ds.display_name as status_display,
-        u_reporter.first_name || ' ' || u_reporter.last_name as reporter_name,
-        u_assignee.first_name || ' ' || u_assignee.last_name as assignee_name
+        d.title as defect_title,
+        (u.first_name || ' ' || u.last_name) as user_name
       FROM defects d
-      LEFT JOIN defect_statuses ds ON d.status_id = ds.id
-      LEFT JOIN users u_reporter ON d.reporter_id = u_reporter.id
-      LEFT JOIN users u_assignee ON d.assignee_id = u_assignee.id
+      JOIN users u ON d.reporter_id = u.id
       WHERE d.project_id = $1
-      ORDER BY d.created_at DESC
+      
+      ORDER BY created_at DESC
       LIMIT 10;
     `, [id]);
 
     const formattedData = result.rows.map((action: any, index: number) => {
       const createdAt = new Date(action.created_at);
-      const updatedAt = new Date(action.updated_at);
-
-
-      const isNew = createdAt.getTime() === updatedAt.getTime();
-      const actionTime = isNew ? createdAt : updatedAt;
-
-      const time = actionTime.toLocaleTimeString('ru-RU', {
+      const time = createdAt.toLocaleTimeString('ru-RU', {
         hour: '2-digit',
         minute: '2-digit'
       });
 
       let actionText = '';
-      const defectId = `DEF-${action.defect_id}`;
+      const defectId = `TRP-${action.defect_id}`;
 
-      if (isNew) {
-        actionText = `создал дефект ${defectId} "${action.title}"`;
+      if (action.source_type === 'defect_created') {
+        actionText = `создал дефект ${defectId} "${action.defect_title}"`;
       } else {
-        switch (action.status) {
-          case 'new':
-            actionText = `создал дефект ${defectId}`;
+        switch (action.field_name) {
+          case 'description':
+            actionText = `изменил описание дефекта ${defectId}`;
             break;
-          case 'in_progress':
-            actionText = `изменил статус ${defectId} на '${action.status_display}'`;
+          case 'attachment':
+            actionText = `добавил файл "${action.new_value}" к дефекту ${defectId}`;
             break;
-          case 'review':
-            actionText = `отправил ${defectId} на проверку`;
+          case 'status':
+            actionText = `изменил статус дефекта ${defectId} с "${action.old_value}" на "${action.new_value}"`;
             break;
-          case 'closed':
-            actionText = `закрыл дефект ${defectId}`;
-            break;
-          case 'cancelled':
-            actionText = `отменил дефект ${defectId}`;
+          case 'assignee':
+            actionText = `назначил дефект ${defectId} пользователю ${action.new_value}`;
             break;
           default:
-            actionText = `обновил дефект ${defectId}`;
+            actionText = `обновил поле "${action.field_name}" дефекта ${defectId}`;
         }
       }
 
       return {
-        id: `${action.defect_id}-${index}`,
+        id: `${action.id}-${index}`,
         time: time,
-        user: action.reporter_name || 'Неизвестный пользователь',
+        user: action.user_name || 'Неизвестный пользователь',
         action: actionText
       };
     });

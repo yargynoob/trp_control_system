@@ -11,9 +11,9 @@ const pool = new Pool({
 });
 
 export async function GET(
-request: Request,
-{ params }: {params: {id: string;};})
-{
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const { id } = params;
 
@@ -22,8 +22,8 @@ request: Request,
         p.id,
         p.name,
         p.description,
-        p.status,
         p.address,
+        p.status,
         COALESCE(defect_stats.defects_count, 0) as defects_count,
         COALESCE(team_stats.team_size, 0) as team_size,
         defect_stats.last_defect_date
@@ -55,6 +55,17 @@ request: Request,
       );
     }
 
+    const usersResult = await pool.query(`
+      SELECT 
+        ur.user_id as "userId",
+        r.name as role,
+        (u.first_name || ' ' || u.last_name) as "userName"
+      FROM user_roles ur
+      JOIN roles r ON ur.role_id = r.id
+      JOIN users u ON ur.user_id = u.id
+      WHERE ur.project_id = $1
+    `, [id]);
+
     const organization = result.rows[0];
 
     const formattedData = {
@@ -65,7 +76,8 @@ request: Request,
       address: organization.address,
       defectsCount: parseInt(organization.defects_count.toString()),
       teamSize: parseInt(organization.team_size.toString()),
-      lastDefectDate: organization.last_defect_date
+      lastDefectDate: organization.last_defect_date,
+      users: usersResult.rows
     };
 
     return NextResponse.json(formattedData);
@@ -73,6 +85,73 @@ request: Request,
     console.error('Database error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch organization' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+request: Request,
+{ params }: {params: {id: string;};})
+{
+  try {
+    const { id } = params;
+    const body = await request.json();
+    const { name, description, address, users } = body;
+
+    if (!name?.trim()) {
+      return NextResponse.json(
+        { error: 'Organization name is required' },
+        { status: 400 }
+      );
+    }
+
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+
+      await client.query(`
+        UPDATE projects 
+        SET name = $1, description = $2, address = $3, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $4
+      `, [name, description || null, address || null, id]);
+
+      if (users && Array.isArray(users)) {
+        await client.query(`
+          DELETE FROM user_roles WHERE project_id = $1
+        `, [id]);
+
+        for (const user of users) {
+          const roleResult = await client.query(`
+            SELECT id FROM roles WHERE name = $1
+          `, [user.role]);
+
+          if (roleResult.rows.length > 0) {
+            const roleId = roleResult.rows[0].id;
+            await client.query(`
+              INSERT INTO user_roles (user_id, role_id, project_id, granted_by)
+              VALUES ($1, $2, $3, 1)
+            `, [parseInt(user.userId), roleId, id]);
+          }
+        }
+      }
+
+      await client.query('COMMIT');
+
+      return NextResponse.json({
+        message: 'Organization updated successfully'
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Database error:', error);
+    return NextResponse.json(
+      { error: 'Failed to update organization' },
       { status: 500 }
     );
   }

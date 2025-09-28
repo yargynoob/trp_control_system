@@ -74,11 +74,16 @@ export async function POST(request: NextRequest) {
     parseInt(defectId),
     fileName,
     file.name,
-    `/uploads/${fileName}`,
+    filePath,
     file.size,
     file.type,
     uploadedBy]
     );
+
+    await pool.query(`
+      INSERT INTO change_logs (defect_id, user_id, field_name, old_value, new_value, change_type)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [parseInt(defectId), uploadedBy, 'attachment', null, file.name, 'create']);
 
     return NextResponse.json({
       id: result.rows[0].id,
