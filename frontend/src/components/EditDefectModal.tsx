@@ -18,10 +18,16 @@ interface Defect {
   id: string;
   title: string;
   description: string;
-  location: string;
+  status: "new" | "in_progress" | "review" | "closed" | "cancelled";
+  statusDisplay: string;
+  priority: "low" | "medium" | "high" | "critical";
+  priorityDisplay: string;
   assignee: string;
-  priority: string;
-  status: string;
+  reporter: string;
+  location: string;
+  createdAt: string;
+  updatedAt: string;
+  dueDate?: string;
 }
 
 interface EditDefectModalProps {
@@ -165,14 +171,14 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect }: EditDefe
           <div className="space-y-4">
             <div className="p-4 bg-[#f8f9fa] border border-[#dee2e6] rounded-md">
               <h4 className="text-sm font-medium text-[#212529] mb-2">Информация о дефекте</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="text-[#6c757d]">Название:</span>
                   <div className="font-medium text-[#212529]">{defect.title}</div>
                 </div>
                 <div>
                   <span className="text-[#6c757d]">Приоритет:</span>
-                  <div className="font-medium text-[#212529]">{defect.priority}</div>
+                  <div className="font-medium text-[#212529]">{defect.priorityDisplay}</div>
                 </div>
                 <div>
                   <span className="text-[#6c757d]">Местоположение:</span>
@@ -181,6 +187,18 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect }: EditDefe
                 <div>
                   <span className="text-[#6c757d]">Ответственный:</span>
                   <div className="font-medium text-[#212529]">{defect.assignee}</div>
+                </div>
+                <div>
+                  <span className="text-[#6c757d]">Дата создания:</span>
+                  <div className="font-medium text-[#212529]">
+                    {defect.createdAt ? new Date(defect.createdAt).toLocaleDateString('ru-RU') : 'Не указана'}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[#6c757d]">Срок выполнения:</span>
+                  <div className="font-medium text-[#212529]">
+                    {defect.dueDate ? new Date(defect.dueDate).toLocaleDateString('ru-RU') : 'Не указан'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -254,7 +272,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect }: EditDefe
           <Button
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-[#007bff] hover:bg-[#0056b3]"
+            className="bg-[#007bff] hover:bg-[#0056b3] text-white"
           >
             {loading ? 'Сохранение...' : 'Сохранить изменения'}
           </Button>

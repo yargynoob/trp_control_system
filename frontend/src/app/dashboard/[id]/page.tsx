@@ -140,15 +140,13 @@ export default function DashboardPage() {
         projectName={project?.name} />
 
       
-      <div className="bg-white border-b border-[#dee2e6] px-4 py-3">
-        <div className="flex items-center justify-between">
+      <div className="bg-white border-b border-[#dee2e6]">
+        <div className="flex items-center justify-between p-3 md:p-6 border-b border-[#dee2e6] bg-white">
           <div>
-            <h1 className="text-xl font-bold text-[#212529]">
-              {project.name}
+            <h1 className="text-[18px] md:text-[24px] font-bold text-[#212529] flex items-center space-x-2">
+              Панель управления
             </h1>
-            <p className="text-sm text-[#6c757d]">
-              {project.description}
-            </p>
+           
           </div>
           <Button
             onClick={() => setIsEditModalOpen(true)}

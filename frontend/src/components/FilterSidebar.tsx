@@ -129,7 +129,7 @@ export function FilterSidebar({
                 id="status-new"
                 checked={filters.status.new}
                 onCheckedChange={(checked) => handleStatusChange('new', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4"
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
               />
               <label htmlFor="status-new" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Новый
@@ -141,7 +141,7 @@ export function FilterSidebar({
                 id="status-in-progress"
                 checked={filters.status.in_progress}
                 onCheckedChange={(checked) => handleStatusChange('in_progress', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4"
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
               />
               <label htmlFor="status-in-progress" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 В работе
@@ -153,7 +153,7 @@ export function FilterSidebar({
                 id="status-review"
                 checked={filters.status.review}
                 onCheckedChange={(checked) => handleStatusChange('review', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4"
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
               />
               <label htmlFor="status-review" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 На проверке
@@ -165,7 +165,7 @@ export function FilterSidebar({
                 id="status-closed"
                 checked={filters.status.closed}
                 onCheckedChange={(checked) => handleStatusChange('closed', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4"
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
               />
               <label htmlFor="status-closed" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Закрыт
@@ -177,7 +177,7 @@ export function FilterSidebar({
                 id="status-cancelled"
                 checked={filters.status.cancelled}
                 onCheckedChange={(checked) => handleStatusChange('cancelled', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4"
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
               />
               <label htmlFor="status-cancelled" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Отменен
@@ -194,7 +194,7 @@ export function FilterSidebar({
                 id="priority-critical" 
                 checked={filters.priority.critical}
                 onCheckedChange={(checked) => handlePriorityChange('critical', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4" 
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]" 
               />
               <label htmlFor="priority-critical" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Критический
@@ -205,7 +205,7 @@ export function FilterSidebar({
                 id="priority-high" 
                 checked={filters.priority.high}
                 onCheckedChange={(checked) => handlePriorityChange('high', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4" 
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]" 
               />
               <label htmlFor="priority-high" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Высокий
@@ -216,7 +216,7 @@ export function FilterSidebar({
                 id="priority-medium" 
                 checked={filters.priority.medium}
                 onCheckedChange={(checked) => handlePriorityChange('medium', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4" 
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]" 
               />
               <label htmlFor="priority-medium" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Средний
@@ -227,7 +227,7 @@ export function FilterSidebar({
                 id="priority-low" 
                 checked={filters.priority.low}
                 onCheckedChange={(checked) => handlePriorityChange('low', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4" 
+                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]" 
               />
               <label htmlFor="priority-low" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Низкий

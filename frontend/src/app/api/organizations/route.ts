@@ -3,12 +3,12 @@ import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'TRP',
-  password: '12345678',
-  port: 5169
-});
+   user: 'postgres',
+   host: 'localhost',
+   database: 'TRP',
+   password: '12345678',
+   port: 5169,
+ });
 
 export async function POST(request: Request) {
   try {
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     }
 
     const client = await pool.connect();
-
+    
     try {
       await client.query('BEGIN');
 
@@ -37,11 +37,11 @@ export async function POST(request: Request) {
 
       if (userRoles && userRoles.length > 0) {
         for (const userRole of userRoles) {
-
+          // Получаем ID роли по названию
           const roleResult = await client.query(`
             SELECT id FROM roles WHERE name = $1
           `, [userRole.role]);
-
+          
           if (roleResult.rows.length > 0) {
             const roleId = roleResult.rows[0].id;
             await client.query(`
@@ -54,9 +54,9 @@ export async function POST(request: Request) {
 
       await client.query('COMMIT');
 
-      return NextResponse.json({
+      return NextResponse.json({ 
         id: projectId,
-        message: 'Organization created successfully'
+        message: 'Organization created successfully' 
       });
     } catch (error) {
       await client.query('ROLLBACK');

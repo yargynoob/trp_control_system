@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 
@@ -51,6 +52,15 @@ function DefectCard({ defect }: {defect: DefectItem;}) {
 export function CriticalDefects({ projectId }: CriticalDefectsProps) {
   const [defects, setDefects] = useState<DefectItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  const handleShowAllCritical = () => {
+    const searchParams = new URLSearchParams({
+      priority: 'critical',
+      status: 'all'
+    });
+    router.push(`/dashboard/${projectId}/defects?${searchParams.toString()}`);
+  };
 
   useEffect(() => {
     const fetchCriticalDefects = async () => {
@@ -104,7 +114,10 @@ export function CriticalDefects({ projectId }: CriticalDefectsProps) {
       </div>
       
       {defects.length > 0 &&
-      <Button variant="ghost" className="text-[#007bff] p-0 h-auto text-xs md:text-sm hover:underline">
+      <Button 
+        variant="ghost" 
+        onClick={handleShowAllCritical}
+        className="text-[#007bff] p-0 h-auto text-xs md:text-sm hover:underline">
           Показать все критические
         </Button>
       }

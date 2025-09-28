@@ -39,7 +39,7 @@ request: Request,
         AND ds.name IN ('new', 'in_progress')
         AND (d.priority_id = 4 OR d.due_date < CURRENT_DATE)
       ORDER BY pr.urgency_level DESC, d.created_at ASC
-      LIMIT 5;
+      LIMIT 2;
     `, [id]);
 
     const formattedData = result.rows.map((defect: any) => {

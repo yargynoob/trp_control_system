@@ -10,9 +10,9 @@ const pool = new Pool({
 });
 
 export async function GET(
-request: Request,
-{ params }: {params: {id: string;};})
-{
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const { id } = params;
 
@@ -75,26 +75,25 @@ request: Request,
       LEFT JOIN users new_user ON cl.new_value = new_user.id::text
       WHERE d.project_id = $1
       ORDER BY cl.created_at DESC
-      LIMIT 3
+      LIMIT 100
     `;
 
     const result = await pool.query(query, [id]);
 
     const formattedData = result.rows.map((row: any) => ({
       id: row.id,
-      time: new Date(row.created_at).toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
+      time: new Date(row.created_at).toLocaleString('ru-RU'),
       user: row.user_name || 'Неизвестный пользователь',
-      action: row.action
+      action: row.action,
+      defectId: row.defect_id,
+      defectTitle: row.defect_title
     }));
 
     return NextResponse.json(formattedData);
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch recent actions' },
+      { error: 'Failed to fetch all actions' },
       { status: 500 }
     );
   }

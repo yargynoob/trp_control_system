@@ -86,7 +86,7 @@ export function DefectsTable({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDefect, setSelectedDefect] = useState<Defect | null>(null);
   const [selectedDefects, setSelectedDefects] = useState<string[]>([]);
-  const [sortField, setSortField] = useState<keyof Defect>("id");
+  const [sortField, setSortField] = useState<keyof Defect>("dueDate");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -266,10 +266,11 @@ const handleSort = (field: keyof Defect) => {
           <table className="w-full border-collapse table-fixed">
             <thead>
               <tr className="bg-[#f8f9fa]">
-                <th className="w-12 py-3 px-4">
+              <th className="w-12 py-3 pl-6 pr-4 text-left">
                   <Checkbox
                     checked={selectedDefects.length === filteredDefects.length && filteredDefects.length > 0}
                     onCheckedChange={handleSelectAll}
+                    className="data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
                   />
                 </th>
                 <th 
@@ -328,11 +329,11 @@ const handleSort = (field: keyof Defect) => {
                 </th>
                 <th 
                   className="w-20 text-left py-3 px-4 font-semibold text-[#212529] text-sm cursor-pointer"
-                  onClick={() => handleSort("createdAt")}
+                  onClick={() => handleSort("dueDate")}
                 >
                   <div className="flex items-center space-x-1">
-                    <span>Дата</span>
-                    {getSortIcon("createdAt")}
+                    <span>Дедлайн</span>
+                    {getSortIcon("dueDate")}
                   </div>
                 </th>
               </tr>
@@ -343,10 +344,11 @@ const handleSort = (field: keyof Defect) => {
                   key={defect.id} 
                   className="border-b border-[#f8f9fa] hover:bg-[#f8f9fa] transition-colors"
                 >
-                  <td className="py-3 px-4">
+                  <td className="py-3 pl-6 pr-4 w-12">
                     <Checkbox
                       checked={selectedDefects.includes(defect.id)}
                       onCheckedChange={() => handleSelectDefect(defect.id)}
+                      className="data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
                     />
                   </td>
                   <td 
@@ -381,7 +383,7 @@ const handleSort = (field: keyof Defect) => {
                     {defect.location}
                   </td>
                   <td className="py-3 px-4 text-sm text-[#6c757d]">
-                    {defect.createdAt ? new Date(defect.createdAt).toLocaleDateString('ru-RU') : '—'}
+                    {defect.dueDate ? new Date(defect.dueDate).toLocaleDateString('ru-RU') : '—'}
                   </td>
                 </tr>
               ))}

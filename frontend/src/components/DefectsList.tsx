@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -37,6 +38,7 @@ interface DefectsListProps {
 }
 
 export function DefectsList({ projectId }: DefectsListProps) {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -60,7 +62,51 @@ export function DefectsList({ projectId }: DefectsListProps) {
       critical: true,
     },
   });
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const updateOverdueDefects = async () => {
+      try {
+        await fetch('/api/defects/update-overdue', {
+          method: 'POST'
+        });
+      } catch (error) {
+        console.error('Error updating overdue defects:', error);
+      }
+    };
+
+    const priority = searchParams.get('priority');
+    const status = searchParams.get('status');
+    
+    updateOverdueDefects();
+    
+    if (priority === 'critical') {
+      setPriorityFilter('critical');
+      setFilters(prev => ({
+        ...prev,
+        priority: {
+          low: false,
+          medium: false,
+          high: false,
+          critical: true,
+        }
+      }));
+    }
+    
+    if (status === 'all') {
+      setStatusFilter('all');
+      setFilters(prev => ({
+        ...prev,
+        status: {
+          new: true,
+          in_progress: true,
+          review: true,
+          closed: true,
+          cancelled: true,
+        }
+      }));
+    }
+  }, [searchParams]);
 
 
   const handleCreateSuccess = () => {

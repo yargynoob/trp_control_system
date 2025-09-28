@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
+import { AllActionsModal } from "./AllActionsModal";
 
 interface ActionItem {
   id: string;
@@ -33,6 +34,7 @@ function ActionItem({ action }: {action: ActionItem;}) {
 export function RecentActions({ projectId }: RecentActionsProps) {
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllActionsModal, setShowAllActionsModal] = useState(false);
 
   useEffect(() => {
     const fetchRecentActions = async () => {
@@ -92,11 +94,17 @@ export function RecentActions({ projectId }: RecentActionsProps) {
       {actions.length > 0 &&
       <Button
         variant="ghost"
+        onClick={() => setShowAllActionsModal(true)}
         className="text-[#007bff] p-0 h-auto text-xs md:text-sm hover:underline">
-
           Показать все действия
         </Button>
       }
+
+      <AllActionsModal
+        isOpen={showAllActionsModal}
+        onClose={() => setShowAllActionsModal(false)}
+        projectId={projectId}
+      />
     </div>);
 
 }

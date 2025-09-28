@@ -329,7 +329,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
           <Button
             onClick={handleSubmit}
             disabled={!formData.name.trim() || loading}
-            className="bg-[#007bff] hover:bg-[#0056b3]"
+            className="bg-[#007bff] hover:bg-[#0056b3] text-white"
           >
             {loading ? 'Сохранение...' : 'Сохранить изменения'}
           </Button>

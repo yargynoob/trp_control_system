@@ -217,16 +217,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md w-full max-h-[85vh] p-0">
-        <div className="p-6 border-b border-[#dee2e6]">
-          <DialogHeader>
-            <DialogTitle className="text-[20px] font-semibold text-[#212529]">
-              Создание нового дефекта
-            </DialogTitle>
-            <DialogDescription className="text-[#6c757d] text-sm">
-              Заполните информацию о новом дефекте для добавления в систему управления
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+        
 
         <div className="p-6 space-y-6">
           {error &&
@@ -237,8 +228,8 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
 
           <div className="space-y-6">
             <div className="space-y-4">
-              <h3 className="text-[16px] font-semibold text-[#212529] uppercase tracking-wide mb-4">
-                ОСНОВНАЯ ИНФОРМАЦИЯ
+            <h3 className="text-[16px] font-semibold text-[#212529] uppercase tracking-wide mb-4">
+                Создание нового дефекта
               </h3>
 
               <div className="space-y-4">
@@ -431,7 +422,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
             <Button
               onClick={handleSubmit}
               disabled={!formData.title.trim() || loading}
-              className="bg-[#007bff] hover:bg-[#0056b3]">
+              className="bg-[#007bff] hover:bg-[#0056b3] text-white">
 
               {loading ? 'Создание...' : 'Создать дефект'}
             </Button>

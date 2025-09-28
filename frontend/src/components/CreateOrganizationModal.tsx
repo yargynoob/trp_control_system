@@ -147,18 +147,8 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-       {/* className="max-w-4xl max-h-[90vh]" */}
-      <DialogContent className="max-w-4xl w-90 max-h-[85vh] p-0">
-        <div className="p-6 border-b border-[#dee2e6]">
-          <DialogHeader>
-            <DialogTitle className="text-[20px] font-semibold text-[#212529]">
-              Создание новой организации
-            </DialogTitle>
-            <DialogDescription className="text-[#6c757d] text-sm">
-              Заполните информацию о новой организации и назначьте сотрудников
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+      <DialogContent className="w-[450px] max-w-none max-h-[85vh] p-0"> 
+        
 
         <div className="p-6 space-y-6">
           {error &&
@@ -322,7 +312,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
             <Button
               onClick={handleSubmit}
               disabled={!formData.name.trim() || loading}
-              className="bg-[#007bff] hover:bg-[#0056b3]">
+              className="bg-[#007bff] hover:bg-[#0056b3] text-white">
 
               {loading ? 'Создание...' : 'Создать организацию'}
             </Button>
