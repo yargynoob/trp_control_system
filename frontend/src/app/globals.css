@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Скрытие скроллбара для Webkit браузеров */
+.scrollbar-hide {
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;

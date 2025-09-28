@@ -6,52 +6,40 @@ interface Defect {
   id: string;
   title: string;
   description: string;
-  status: "open" | "in_progress" | "resolved" | "closed";
-  priority: "critical" | "high" | "medium" | "low";
-  severity: "minor" | "major" | "critical" | "blocker";
+  status: "new" | "in_progress" | "review" | "closed" | "cancelled";
+  statusDisplay: string;
+  priority: "low" | "medium" | "high" | "critical";
+  priorityDisplay: string;
   assignee: string;
   reporter: string;
   location: string;
-  equipment: string;
-  defectType: string;
-  foundDate: string;
+  createdAt: string;
   updatedAt: string;
+  dueDate?: string;
 }
 
 interface DefectsTableProps {
   projectId: string;
   searchQuery: string;
+  refreshKey?: number;
 }
 
-const statusLabels = {
-  open: "Открыт",
-  in_progress: "В работе",
-  resolved: "Решен",
-  closed: "Закрыт"
-};
-
-const priorityLabels = {
-  critical: "Критический",
-  high: "Высокий", 
-  medium: "Средний",
-  low: "Низкий"
-};
-
 const statusColors = {
-  open: "bg-[#dc3545] text-white",
-  in_progress: "bg-[#ffc107] text-[#212529]",
-  resolved: "bg-[#28a745] text-white",
-  closed: "bg-[#6c757d] text-white"
+  new: "bg-[#6c757d] text-white",
+  in_progress: "bg-[#007bff] text-white",
+  review: "bg-[#ffc107] text-[#212529]",
+  closed: "bg-[#28a745] text-white",
+  cancelled: "bg-[#dc3545] text-white"
 };
 
 const priorityColors = {
-  critical: "text-[#dc3545]",
+  low: "text-[#28a745]",
+  medium: "text-[#ffc107]",
   high: "text-[#fd7e14]",
-  medium: "text-[#ffc107]", 
-  low: "text-[#28a745]"
+  critical: "text-[#dc3545]"
 };
 
-export function DefectsTable({ projectId, searchQuery }: DefectsTableProps) {
+export function DefectsTable({ projectId, searchQuery, refreshKey }: DefectsTableProps) {
   const [defects, setDefects] = useState<Defect[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,30 +63,49 @@ export function DefectsTable({ projectId, searchQuery }: DefectsTableProps) {
     };
 
     fetchDefects();
-  }, [projectId, searchQuery]);
+  }, [projectId, searchQuery, refreshKey]);
+
+  const handleDeleteDefect = async (defectId: string) => {
+    if (window.confirm(`Вы уверены, что хотите удалить дефект TRP-${defectId}?`)) {
+      try {
+        const response = await fetch(`/api/defects/${defectId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+
+          setDefects(defects.filter((d) => d.id !== defectId));
+        } else {
+          console.error('Failed to delete defect');
+        }
+      } catch (error) {
+        console.error('Error deleting defect:', error);
+      }
+    }
+  };
 
   if (loading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-16 bg-[#f8f9fa] rounded animate-pulse"></div>
-        ))}
-      </div>
-    );
+        {[1, 2, 3, 4, 5].map((i) =>
+        <div key={i} className="h-16 bg-[#f8f9fa] rounded animate-pulse"></div>
+        )}
+      </div>);
+
   }
 
   if (error) {
     return (
       <div className="text-center py-8">
         <p className="text-[#dc3545] mb-4">Ошибка: {error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-[#007bff] text-white rounded hover:bg-[#0056b3]"
-        >
+          className="px-4 py-2 bg-[#007bff] text-white rounded hover:bg-[#0056b3]">
+
           Попробовать снова
         </button>
-      </div>
-    );
+      </div>);
+
   }
 
   if (defects.length === 0) {
@@ -107,8 +114,8 @@ export function DefectsTable({ projectId, searchQuery }: DefectsTableProps) {
         <p className="text-[#6c757d] text-lg">
           {searchQuery ? 'Дефекты не найдены' : 'Дефекты отсутствуют'}
         </p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -123,11 +130,12 @@ export function DefectsTable({ projectId, searchQuery }: DefectsTableProps) {
             <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Ответственный</th>
             <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Местоположение</th>
             <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Дата</th>
+            <th className="text-left py-3 px-4 font-semibold text-[#212529] text-sm">Действия</th>
           </tr>
         </thead>
         <tbody>
-          {defects.map((defect) => (
-            <tr key={defect.id} className="border-b border-[#f8f9fa] hover:bg-[#f8f9fa]">
+          {defects.map((defect) =>
+          <tr key={defect.id} className="border-b border-[#f8f9fa] hover:bg-[#f8f9fa]">
               <td className="py-3 px-4 text-sm font-medium text-[#007bff]">
                 TRP-{defect.id}
               </td>
@@ -139,12 +147,12 @@ export function DefectsTable({ projectId, searchQuery }: DefectsTableProps) {
               </td>
               <td className="py-3 px-4">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[defect.status]}`}>
-                  {statusLabels[defect.status]}
+                  {defect.statusDisplay}
                 </span>
               </td>
               <td className="py-3 px-4">
                 <span className={`text-sm font-medium ${priorityColors[defect.priority]}`}>
-                  {priorityLabels[defect.priority]}
+                  {defect.priorityDisplay}
                 </span>
               </td>
               <td className="py-3 px-4 text-sm text-[#212529]">
@@ -154,12 +162,21 @@ export function DefectsTable({ projectId, searchQuery }: DefectsTableProps) {
                 {defect.location}
               </td>
               <td className="py-3 px-4 text-sm text-[#6c757d]">
-                {new Date(defect.foundDate).toLocaleDateString('ru-RU')}
+                {defect.createdAt ? new Date(defect.createdAt).toLocaleDateString('ru-RU') : '—'}
+              </td>
+              <td className="py-3 px-4">
+                <button
+                onClick={() => handleDeleteDefect(defect.id)}
+                className="text-[#dc3545] hover:text-[#b02a37] text-lg font-bold p-1"
+                title="Удалить дефект">
+
+                  ×
+                </button>
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
-    </div>
-  );
+    </div>);
+
 }

@@ -14,7 +14,7 @@ interface RecentActionsProps {
   projectId: string;
 }
 
-function ActionItem({ action }: { action: ActionItem }) {
+function ActionItem({ action }: {action: ActionItem;}) {
   return (
     <div className="py-1.5 md:py-2 border-b border-[#f8f9fa] last:border-b-0">
       <div className="text-xs text-[#6c757d] mb-1">
@@ -26,8 +26,8 @@ function ActionItem({ action }: { action: ActionItem }) {
         </span>{" "}
         <span>{action.action}</span>
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 export function RecentActions({ projectId }: RecentActionsProps) {
@@ -60,13 +60,13 @@ export function RecentActions({ projectId }: RecentActionsProps) {
         </h3>
         <div className="bg-white border border-[#dee2e6] rounded-lg p-3 md:p-4 mb-3 md:mb-4">
           <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-[40px] bg-[#f8f9fa] rounded animate-pulse"></div>
-            ))}
+            {[1, 2, 3, 4].map((i) =>
+            <div key={i} className="h-[40px] bg-[#f8f9fa] rounded animate-pulse"></div>
+            )}
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -77,26 +77,26 @@ export function RecentActions({ projectId }: RecentActionsProps) {
 
       <div className="bg-white border border-[#dee2e6] rounded-lg p-3 md:p-4 mb-3 md:mb-4">
         <div className="space-y-1 md:space-y-2 max-h-[300px] md:max-h-none overflow-y-auto">
-          {actions.length > 0 ? (
-            actions.map((action) => (
-              <ActionItem key={action.id} action={action} />
-            ))
-          ) : (
-            <div className="text-center text-[#6c757d] py-4">
+          {actions.length > 0 ?
+          actions.map((action) =>
+          <ActionItem key={action.id} action={action} />
+          ) :
+
+          <div className="text-center text-[#6c757d] py-4">
               Нет последних действий
             </div>
-          )}
+          }
         </div>
       </div>
 
-      {actions.length > 0 && (
-        <Button
-          variant="ghost"
-          className="text-[#007bff] p-0 h-auto text-xs md:text-sm hover:underline"
-        >
+      {actions.length > 0 &&
+      <Button
+        variant="ghost"
+        className="text-[#007bff] p-0 h-auto text-xs md:text-sm hover:underline">
+
           Показать все действия
         </Button>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }

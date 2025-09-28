@@ -16,7 +16,7 @@ interface CriticalDefectsProps {
   projectId: string;
 }
 
-function DefectCard({ defect }: { defect: DefectItem }) {
+function DefectCard({ defect }: {defect: DefectItem;}) {
   return (
     <Card className="p-3 md:p-4 bg-white border border-[#dee2e6] rounded-lg shadow-sm mb-3">
       <div className="flex items-start space-x-2 md:space-x-3">
@@ -36,14 +36,16 @@ function DefectCard({ defect }: { defect: DefectItem }) {
               <span className="truncate">{defect.assignee}</span>
             </div>
             
+            {defect.overdueDays > 0 &&
             <div className="flex items-center space-x-2 text-xs text-[#dc3545]">
-              <span>Просрочено на {defect.overdueDays} дн.</span>
-            </div>
+                <span>Просрочено на {defect.overdueDays} дн.</span>
+              </div>
+            }
           </div>
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
 
 export function CriticalDefects({ projectId }: CriticalDefectsProps) {
@@ -75,12 +77,12 @@ export function CriticalDefects({ projectId }: CriticalDefectsProps) {
           КРИТИЧЕСКИЕ ДЕФЕКТЫ
         </h3>
         <div className="space-y-2 md:space-y-3 mb-3 md:mb-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-[100px] bg-[#f8f9fa] rounded-lg animate-pulse"></div>
-          ))}
+          {[1, 2, 3].map((i) =>
+          <div key={i} className="h-[100px] bg-[#f8f9fa] rounded-lg animate-pulse"></div>
+          )}
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -90,22 +92,22 @@ export function CriticalDefects({ projectId }: CriticalDefectsProps) {
       </h3>
       
       <div className="space-y-2 md:space-y-3 mb-3 md:mb-4">
-        {defects.length > 0 ? (
-          defects.map((defect) => (
-            <DefectCard key={defect.id} defect={defect} />
-          ))
-        ) : (
-          <Card className="p-4 text-center text-[#6c757d]">
+        {defects.length > 0 ?
+        defects.map((defect) =>
+        <DefectCard key={defect.id} defect={defect} />
+        ) :
+
+        <Card className="p-4 text-center text-[#6c757d]">
             Критических дефектов не найдено
           </Card>
-        )}
+        }
       </div>
       
-      {defects.length > 0 && (
-        <Button variant="ghost" className="text-[#007bff] p-0 h-auto text-xs md:text-sm hover:underline">
+      {defects.length > 0 &&
+      <Button variant="ghost" className="text-[#007bff] p-0 h-auto text-xs md:text-sm hover:underline">
           Показать все критические
         </Button>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }

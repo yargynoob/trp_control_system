@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
+import { CreateOrganizationModal } from "./CreateOrganizationModal";
 
 interface Project {
   id: string;
@@ -37,30 +38,36 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/organizations');
+      if (!response.ok) {
+        throw new Error('Failed to fetch organizations');
+      }
+      const data = await response.json();
+      setProjects(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching projects:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch('/api/organizations');
-        if (!response.ok) {
-          throw new Error('Failed to fetch organizations');
-        }
-        const data = await response.json();
-        setProjects(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        console.error('Error fetching projects:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProjects();
   }, []);
 
-  const filteredProjects = projects.filter(project =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleCreateSuccess = () => {
+    fetchProjects();
+  };
+
+  const filteredProjects = projects.filter((project) =>
+  project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  project.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -69,8 +76,8 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
         <div className="text-center py-12">
           <p className="text-[#6c757d] text-lg">Загрузка предприятий...</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (error) {
@@ -78,15 +85,15 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
       <div className="p-3 md:p-6">
         <div className="text-center py-12">
           <p className="text-[#dc3545] text-lg">Ошибка: {error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-[#007bff] text-white rounded hover:bg-[#0056b3]"
-          >
+            className="mt-4 px-4 py-2 bg-[#007bff] text-white rounded hover:bg-[#0056b3]">
+
             Попробовать снова
           </button>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -100,24 +107,30 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
         </p>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="relative max-w-md">
           <Input
             placeholder="Поиск предприятий..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-[#dee2e6] focus:border-[#007bff] focus:ring-[#007bff]"
-          />
+            className="border-[#dee2e6] focus:border-[#007bff] focus:ring-[#007bff]" />
+
         </div>
+        <Button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="bg-[#007bff] hover:bg-[#0056b3] text-white">
+
+          + Добавить организацию
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredProjects.map((project) => (
-          <Card 
-            key={project.id} 
-            className="border border-[#dee2e6] hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => onProjectSelect(project)}
-          >
+        {filteredProjects.map((project) =>
+        <Card
+          key={project.id}
+          className="border border-[#dee2e6] hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => onProjectSelect(project)}>
+
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-2">
@@ -146,32 +159,32 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
                   </div>
                   <div className="text-[#6c757d] text-right">
                     <div className="font-medium text-[#212529]">
-                      {project.lastDefectDate 
-                        ? new Date(project.lastDefectDate).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                        : 'Нет дефектов'
-                      }
+                      {project.lastDefectDate ?
+                    new Date(project.lastDefectDate).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }) :
+                    'Нет дефектов'
+                    }
                     </div>
                     <div className="text-xs">Последний дефект</div>
                   </div>
                 </div>
 
-                <Button 
-                  className="w-full bg-[#007bff] hover:bg-[#0056b3] text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onProjectSelect(project);
-                  }}
-                >
+                <Button
+                className="w-full bg-[#007bff] hover:bg-[#0056b3] text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onProjectSelect(project);
+                }}>
+
                   Выбрать предприятие
                 </Button>
               </div>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
-      {filteredProjects.length === 0 && (
-        <div className="text-center py-12">
+      {filteredProjects.length === 0 &&
+      <div className="text-center py-12">
           <h3 className="text-[18px] font-semibold text-[#212529] mb-2">
             Предприятия не найдены
           </h3>
@@ -179,7 +192,13 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
             Попробуйте изменить поисковый запрос
           </p>
         </div>
-      )}
-    </div>
-  );
+      }
+
+      <CreateOrganizationModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleCreateSuccess} />
+
+    </div>);
+
 }

@@ -20,8 +20,8 @@ function MetricCard({ title, value, isOverdue }: MetricCardProps) {
           {value}
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
 
 interface MetricsData {
@@ -66,8 +66,8 @@ export function MetricCards({ projectId }: MetricCardsProps) {
         <div className="flex-1 h-[100px] md:h-[120px] bg-[#f8f9fa] rounded-lg animate-pulse"></div>
         <div className="flex-1 h-[100px] md:h-[120px] bg-[#f8f9fa] rounded-lg animate-pulse"></div>
         <div className="flex-1 h-[100px] md:h-[120px] bg-[#f8f9fa] rounded-lg animate-pulse"></div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -75,6 +75,6 @@ export function MetricCards({ projectId }: MetricCardsProps) {
       <MetricCard title="ВСЕГО ДЕФЕКТОВ" value={metrics.totalDefects.toString()} />
       <MetricCard title="В РАБОТЕ" value={metrics.inProgress.toString()} />
       <MetricCard title="ПРОСРОЧЕНО" value={metrics.overdue.toString()} isOverdue={metrics.overdue > 0} />
-    </div>
-  );
+    </div>);
+
 }

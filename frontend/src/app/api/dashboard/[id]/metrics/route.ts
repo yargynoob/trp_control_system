@@ -6,23 +6,24 @@ const pool = new Pool({
   host: 'localhost',
   database: 'TRP',
   password: '12345678',
-  port: 5169,
+  port: 5169
 });
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+request: Request,
+{ params }: {params: {id: string;};})
+{
   try {
     const { id } = params;
 
     const result = await pool.query(`
       SELECT 
         COUNT(*) as total_defects,
-        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress,
-        COUNT(CASE WHEN status = 'open' AND found_date < NOW() - INTERVAL '7 days' THEN 1 END) as overdue
-      FROM defects 
-      WHERE project_id = $1 AND is_active = true;
+        COUNT(CASE WHEN ds.name = 'in_progress' THEN 1 END) as in_progress,
+        COUNT(CASE WHEN d.due_date < CURRENT_DATE THEN 1 END) as overdue
+      FROM defects d
+      LEFT JOIN defect_statuses ds ON d.status_id = ds.id
+      WHERE d.project_id = $1;
     `, [id]);
 
     if (result.rows.length === 0) {
@@ -34,7 +35,7 @@ export async function GET(
     }
 
     const metrics = result.rows[0];
-    
+
     const formattedData = {
       totalDefects: parseInt(metrics.total_defects.toString()),
       inProgress: parseInt(metrics.in_progress.toString()),

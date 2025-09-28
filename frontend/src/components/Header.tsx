@@ -34,6 +34,6 @@ export function Header({ userName = "Иван Петров", userRole = "Мен�
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 }

@@ -6,13 +6,13 @@ const pool = new Pool({
   host: 'localhost',
   database: 'TRP',
   password: '12345678',
-  port: 5169,
+  port: 5169
 });
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+request: Request,
+{ params }: {params: {id: string;};})
+{
   try {
     const { id } = params;
     const { searchParams } = new URL(request.url);
@@ -23,20 +23,22 @@ export async function GET(
         d.id,
         d.title,
         d.description,
-        d.status,
-        d.priority,
-        d.severity,
+        ds.name as status,
+        pr.name as priority,
         d.location,
-        d.equipment,
-        d.defect_type,
-        d.found_date,
+        d.created_at,
         d.updated_at,
+        d.due_date,
         u_assignee.first_name || ' ' || u_assignee.last_name as assignee_name,
-        u_reporter.first_name || ' ' || u_reporter.last_name as reporter_name
+        u_reporter.first_name || ' ' || u_reporter.last_name as reporter_name,
+        ds.display_name as status_display,
+        pr.display_name as priority_display
       FROM defects d
+      LEFT JOIN defect_statuses ds ON d.status_id = ds.id
+      LEFT JOIN priorities pr ON d.priority_id = pr.id
       LEFT JOIN users u_assignee ON d.assignee_id = u_assignee.id
       LEFT JOIN users u_reporter ON d.reporter_id = u_reporter.id
-      WHERE d.project_id = $1 AND d.is_active = true
+      WHERE d.project_id = $1
     `;
 
     const queryParams = [id];
@@ -46,7 +48,7 @@ export async function GET(
       queryParams.push(`%${search}%`);
     }
 
-    query += ` ORDER BY d.found_date DESC`;
+    query += ` ORDER BY d.created_at DESC`;
 
     const result = await pool.query(query, queryParams);
 
@@ -55,15 +57,15 @@ export async function GET(
       title: defect.title,
       description: defect.description,
       status: defect.status,
+      statusDisplay: defect.status_display,
       priority: defect.priority,
-      severity: defect.severity,
+      priorityDisplay: defect.priority_display,
       assignee: defect.assignee_name,
       reporter: defect.reporter_name,
       location: defect.location,
-      equipment: defect.equipment,
-      defectType: defect.defect_type,
-      foundDate: defect.found_date,
-      updatedAt: defect.updated_at
+      createdAt: defect.created_at,
+      updatedAt: defect.updated_at,
+      dueDate: defect.due_date
     }));
 
     return NextResponse.json(formattedData);

@@ -48,31 +48,31 @@ export default function DefectsPage() {
         <div className="p-6 text-center">
           <p className="text-[#6c757d]">Загрузка...</p>
         </div>
-      </main>
-    );
+      </main>);
+
   }
 
   return (
     <main className="min-h-screen bg-white">
       <Header />
-      <Navigation 
-        activeTab="defects" 
-        projectSelected={!!project} 
-        projectName={project?.name}
-      />
+      <Navigation
+        activeTab="defects"
+        projectSelected={!!project}
+        projectName={project?.name} />
+
       
       <div className="p-3 md:p-6 border-b border-[#dee2e6] bg-white">
         <h1 className="text-[18px] md:text-[24px] font-bold text-[#212529]">
           Дефекты
         </h1>
-        {project && (
-          <p className="text-sm text-[#6c757d] mt-1">
+        {project &&
+        <p className="text-sm text-[#6c757d] mt-1">
             {project.name}
           </p>
-        )}
+        }
       </div>
 
       <DefectsList projectId={projectId} />
-    </main>
-  );
+    </main>);
+
 }

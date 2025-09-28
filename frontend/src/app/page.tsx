@@ -16,6 +16,6 @@ export default function Home() {
         <div className="w-8 h-8 bg-[#007bff] rounded-lg mx-auto mb-4"></div>
         <p className="text-[#6c757d]">Переадресация...</p>
       </div>
-    </main>
-  );
+    </main>);
+
 }

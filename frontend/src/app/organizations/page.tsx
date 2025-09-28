@@ -29,6 +29,6 @@ export default function OrganizationsPage() {
       <Header />
       <Navigation activeTab="projects" projectSelected={false} />
       <ProjectSelector onProjectSelect={handleProjectSelect} />
-    </main>
-  );
+    </main>);
+
 }

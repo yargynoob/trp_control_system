@@ -6,13 +6,13 @@ const pool = new Pool({
   host: 'localhost',
   database: 'TRP',
   password: '12345678',
-  port: 5169,
+  port: 5169
 });
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+request: Request,
+{ params }: {params: {id: string;};})
+{
   try {
     const { id } = params;
 
@@ -21,27 +21,48 @@ export async function GET(
         d.id,
         d.title,
         d.location,
-        d.found_date,
+        d.created_at,
+        d.due_date,
         u.first_name || ' ' || u.last_name as assignee_name,
-        EXTRACT(days FROM NOW() - d.found_date) as overdue_days
+        pr.name as priority_name,
+        ds.name as status_name,
+        CASE 
+          WHEN d.due_date IS NOT NULL AND d.due_date < CURRENT_DATE 
+          THEN (CURRENT_DATE - d.due_date)
+          ELSE 0
+        END as overdue_days
       FROM defects d
       LEFT JOIN users u ON d.assignee_id = u.id
+      LEFT JOIN priorities pr ON d.priority_id = pr.id
+      LEFT JOIN defect_statuses ds ON d.status_id = ds.id
       WHERE d.project_id = $1 
-        AND d.is_active = true 
-        AND d.priority = 'critical'
-        AND d.status IN ('open', 'in_progress')
-        AND d.found_date < NOW() - INTERVAL '3 days'
-      ORDER BY d.found_date ASC
+        AND ds.name IN ('new', 'in_progress')
+        AND (d.priority_id = 4 OR d.due_date < CURRENT_DATE)
+      ORDER BY pr.urgency_level DESC, d.created_at ASC
       LIMIT 5;
     `, [id]);
 
-    const formattedData = result.rows.map((defect: any) => ({
-      id: `TRP-${defect.id}`,
-      title: defect.title,
-      location: defect.location || 'Местоположение не указано',
-      assignee: defect.assignee_name || 'Не назначен',
-      overdueDays: parseInt(defect.overdue_days.toString()) || 0
-    }));
+    const formattedData = result.rows.map((defect: any) => {
+      let overdueDays = 0;
+      if (defect.overdue_days && defect.overdue_days !== 0) {
+
+        if (typeof defect.overdue_days === 'number') {
+          overdueDays = defect.overdue_days;
+        } else {
+
+          const match = defect.overdue_days.toString().match(/(\d+)/);
+          overdueDays = match ? parseInt(match[1]) : 0;
+        }
+      }
+
+      return {
+        id: `DEF-${defect.id}`,
+        title: defect.title,
+        location: defect.location || 'Местоположение не указано',
+        assignee: defect.assignee_name || 'Не назначен',
+        overdueDays: Math.max(0, overdueDays)
+      };
+    });
 
     return NextResponse.json(formattedData);
   } catch (error) {

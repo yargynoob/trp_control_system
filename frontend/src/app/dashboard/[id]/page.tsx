@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -52,6 +54,30 @@ export default function DashboardPage() {
     fetchProject();
   }, [params.id]);
 
+  const handleDeleteOrganization = async () => {
+    if (!project) return;
+
+    setDeleteLoading(true);
+    try {
+      const response = await fetch(`/api/organizations/${params.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete organization');
+      }
+
+
+      router.push('/?message=organization-deleted');
+    } catch (err) {
+      console.error('Error deleting organization:', err);
+      setError(err instanceof Error ? err.message : 'Ошибка удаления организации');
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-white">
@@ -61,8 +87,8 @@ export default function DashboardPage() {
             <p className="text-[#6c757d] text-lg">Загрузка...</p>
           </div>
         </div>
-      </main>
-    );
+      </main>);
+
   }
 
   if (error || !project) {
@@ -74,26 +100,26 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-[#212529] mb-4">
               {error || 'Предприятие не найдено'}
             </h1>
-            <button 
+            <button
               onClick={() => router.push('/organizations')}
-              className="text-[#007bff] hover:text-[#0056b3]"
-            >
+              className="text-[#007bff] hover:text-[#0056b3]">
+
               ← Вернуться к списку предприятий
             </button>
           </div>
         </div>
-      </main>
-    );
+      </main>);
+
   }
 
   return (
     <main className="min-h-screen bg-white">
       <Header />
-      <Navigation 
-        activeTab="dashboard" 
-        projectSelected={!!project} 
-        projectName={project?.name}
-      />
+      <Navigation
+        activeTab="dashboard"
+        projectSelected={!!project}
+        projectName={project?.name} />
+
       
       <div className="bg-white border-b border-[#dee2e6] px-4 py-3">
         <div className="flex items-center justify-between">
@@ -116,6 +142,55 @@ export default function DashboardPage() {
           <RecentActions projectId={params.id as string} />
         </div>
       </div>
-    </main>
-  );
+
+      {/* Секция удаления организации */}
+      <div className="px-3 md:px-6 pb-6 border-t border-[#dee2e6] pt-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">
+            Опасная зона
+          </h3>
+          <p className="text-sm text-red-700 mb-4">
+            Удаление организации приведет к безвозвратной потере всех данных, включая дефекты, комментарии и файлы.
+          </p>
+          
+          {!showDeleteConfirm ?
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+
+              Удалить организацию
+            </button> :
+
+          <div className="space-y-4">
+              <div className="p-4 bg-red-100 border border-red-300 rounded-md">
+                <p className="text-red-800 font-medium mb-2">
+                  Вы уверены, что хотите удалить организацию "{project?.name}"?
+                </p>
+                <p className="text-sm text-red-700">
+                  Это действие нельзя отменить. Все данные будут удалены навсегда.
+                </p>
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                onClick={handleDeleteOrganization}
+                disabled={deleteLoading}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+
+                  {deleteLoading ? 'Удаление...' : 'Да, удалить'}
+                </button>
+                <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleteLoading}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">
+
+                  Отмена
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </main>);
+
 }
