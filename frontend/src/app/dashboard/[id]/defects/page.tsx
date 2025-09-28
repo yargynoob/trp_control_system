@@ -61,17 +61,7 @@ export default function DefectsPage() {
         projectName={project?.name} />
 
       
-      <div className="p-3 md:p-6 border-b border-[#dee2e6] bg-white">
-        <h1 className="text-[18px] md:text-[24px] font-bold text-[#212529]">
-          Дефекты
-        </h1>
-        {project &&
-        <p className="text-sm text-[#6c757d] mt-1">
-            {project.name}
-          </p>
-        }
-      </div>
-
+      
       <DefectsList projectId={projectId} />
     </main>);
 
