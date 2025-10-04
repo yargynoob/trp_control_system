@@ -14,6 +14,12 @@ interface CreateDefectModalProps {
   projectId: string;
 }
 
+interface Priority {
+  id: number;
+  name: string;
+  display_name: string;
+}
+
 interface User {
   id: string;
   username: string;
@@ -30,43 +36,19 @@ interface AttachedFile {
   file: File;
 }
 
-const priorities = [
-{ value: 'low', label: 'Низкий' },
-{ value: 'medium', label: 'Средний' },
-{ value: 'high', label: 'Высокий' },
-{ value: 'critical', label: 'Критический' }];
-
-
-const severities = [
-{ value: 'minor', label: 'Незначительный' },
-{ value: 'major', label: 'Значительный' },
-{ value: 'critical', label: 'Критический' },
-{ value: 'blocker', label: 'Блокирующий' }];
-
-
-const defectTypes = [
-{ value: 'defect', label: 'Дефект' },
-{ value: 'malfunction', label: 'Неисправность' },
-{ value: 'wear', label: 'Износ' },
-{ value: 'damage', label: 'Повреждение' },
-{ value: 'leak', label: 'Утечка' },
-{ value: 'crack', label: 'Трещина' },
-{ value: 'corrosion', label: 'Коррозия' },
-{ value: 'other', label: 'Другое' }];
-
 
 export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: CreateDefectModalProps) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     location: "",
-    defectType: "defect",
     priority: "medium",
     assigneeId: "",
     deadline: ""
   });
 
   const [users, setUsers] = useState<User[]>([]);
+  const [priorities, setPriorities] = useState<Priority[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +57,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
   useEffect(() => {
     if (isOpen) {
       fetchUsers();
+      fetchPriorities();
     }
   }, [isOpen]);
 
@@ -90,10 +73,26 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
     }
   };
 
+  const fetchPriorities = async () => {
+    try {
+      const response = await fetch('/api/defects/priorities');
+      if (response.ok) {
+        const data = await response.json();
+        setPriorities(data);
+        // Set first priority as default if current priority doesn't exist
+        if (data.length > 0 && !data.find((p: Priority) => p.name === formData.priority)) {
+          setFormData(prev => ({ ...prev, priority: data[0].name }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching priorities:', error);
+    }
+  };
+
   const filteredUsers = users.filter((user) =>
-  user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  user.username.toLowerCase().includes(searchQuery.toLowerCase())
+  (user.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+  (user.lastName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+  (user.username || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleInputChange = (field: string, value: string) => {
@@ -137,7 +136,8 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
     for (const attachedFile of attachedFiles) {
       const formData = new FormData();
       formData.append('file', attachedFile.file);
-      formData.append('defectId', defectId);
+      formData.append('defect_id', defectId);
+      formData.append('user_id', '1');
 
       try {
         const response = await fetch('/api/defects/upload', {
@@ -146,7 +146,8 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
         });
 
         if (!response.ok) {
-          console.error('Failed to upload file:', attachedFile.name);
+          const error = await response.json().catch(() => ({}));
+          console.error('Failed to upload file:', attachedFile.name, error);
         }
       } catch (error) {
         console.error('Error uploading file:', error);
@@ -163,16 +164,25 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
         throw new Error('Название дефекта обязательно');
       }
 
+      const priorityObj = priorities.find(p => p.name === formData.priority);
+      if (!priorityObj) {
+        throw new Error('Приоритет не найден');
+      }
+
       const response = await fetch('/api/defects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...formData,
-          projectId: parseInt(projectId),
-          assigneeId: formData.assigneeId ? parseInt(formData.assigneeId) : null,
-          deadline: formData.deadline || null
+          title: formData.title,
+          description: formData.description,
+          location: formData.location || null,
+          project_id: parseInt(projectId),
+          priority_id: priorityObj.id,
+          assignee_id: formData.assigneeId ? parseInt(formData.assigneeId) : null,
+          due_date: formData.deadline || null,
+          reporter_id: 1
         })
       });
 
@@ -201,12 +211,12 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
       title: "",
       description: "",
       location: "",
-      defectType: "defect",
       priority: "medium",
       assigneeId: "",
       deadline: ""
     });
     setAttachedFiles([]);
+    setSearchQuery("");
     setError(null);
   };
 
@@ -297,13 +307,17 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
                   <select
                     value={formData.priority}
                     onChange={(e) => handleInputChange('priority', e.target.value)}
-                    className="mt-1 w-full h-10 rounded-md border border-[#ced4da] bg-white px-3 py-2 text-sm">
+                    className="mt-1 w-full h-10 rounded-md border border-[#ced4da] bg-white px-3 py-2 text-sm"
+                    disabled={priorities.length === 0}>
 
-                    {priorities.map((priority) =>
-                    <option key={priority.value} value={priority.value}>
-                        {priority.label}
-                      </option>
-                    )}
+                    {priorities.length === 0 ? 
+                      <option>Загрузка...</option> :
+                      priorities.map((priority) =>
+                      <option key={priority.name} value={priority.name}>
+                          {priority.display_name}
+                        </option>
+                      )
+                    }
                   </select>
                 </div>
 
@@ -323,7 +337,10 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
                     {formData.assigneeId ?
                     <div className="p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md flex items-center justify-between">
                         <span className="text-sm">
-                          {users.find((u) => u.id === formData.assigneeId)?.firstName} {users.find((u) => u.id === formData.assigneeId)?.lastName}
+                          {(() => {
+                            const user = users.find((u) => u.id === formData.assigneeId);
+                            return user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username;
+                          })()}
                         </span>
                         <Button
                         variant="ghost"
@@ -352,7 +369,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
 
                             <div>
                               <div className="text-xs font-medium text-[#212529]">
-                                {user.firstName} {user.lastName}
+                                {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
                               </div>
                               <div className="text-xs text-[#6c757d]">{user.email}</div>
                             </div>

@@ -63,6 +63,8 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
         address: organization.address || ""
       });
       setSelectedUsers(organization.users || []);
+      setSearchQuery("");
+      setError(null);
     }
   }, [organization, isOpen]);
 
@@ -74,9 +76,9 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
 
   useEffect(() => {
     const filtered = users.filter((user) =>
-      user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchQuery.toLowerCase())
+      (user.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.lastName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.username || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredUsers(filtered);
   }, [users, searchQuery]);
@@ -98,14 +100,17 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
   };
 
   const handleAddUser = (user: User, role: string) => {
-    if (selectedUsers.find((su) => su.userId === user.id)) {
+    // Check if user is already selected (compare as strings)
+    const isAlreadySelected = selectedUsers.some((su) => String(su.userId) === String(user.id));
+    if (isAlreadySelected) {
+      console.log('User already selected:', user.id);
       return;
     }
 
     const newSelectedUser: SelectedUser = {
       userId: user.id,
       role: role,
-      userName: `${user.firstName} ${user.lastName}`
+      userName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username
     };
 
     setSelectedUsers((prev) => [...prev, newSelectedUser]);
@@ -137,7 +142,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
         },
         body: JSON.stringify({
           ...formData,
-          users: selectedUsers
+          user_roles: selectedUsers
         })
       });
 
@@ -146,8 +151,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
       }
 
       onSuccess();
-      onClose();
-      resetForm();
+      handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -162,18 +166,19 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
       address: ""
     });
     setSelectedUsers([]);
+    setSearchQuery("");
     setError(null);
   };
 
   const handleClose = () => {
-    onClose();
     resetForm();
+    onClose();
   };
 
   if (!organization) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => !loading && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && !loading && handleClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <div className="p-6 space-y-6">
           {error &&
@@ -255,7 +260,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
                     <div key={user.id} className="flex items-center justify-between p-3 border-b border-[#f8f9fa] last:border-b-0">
                       <div className="flex-1">
                         <div className="text-sm font-medium text-[#212529]">
-                          {user.firstName} {user.lastName}
+                          {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
                         </div>
                         <div className="text-xs text-[#6c757d]">{user.email}</div>
                       </div>
@@ -264,10 +269,10 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
                           size="sm"
                           variant="outline"
                           onClick={() => handleAddUser(user, 'engineer')}
-                          disabled={!!selectedUsers.find((su) => su.userId === user.id)}
+                          disabled={selectedUsers.some((su) => String(su.userId) === String(user.id))}
                           className="text-xs h-7 px-3"
                         >
-                          {selectedUsers.find((su) => su.userId === user.id) ? 'Добавлен' : 'Добавить'}
+                          {selectedUsers.some((su) => String(su.userId) === String(user.id)) ? 'Добавлен' : 'Добавить'}
                         </Button>
                       </div>
                     </div>

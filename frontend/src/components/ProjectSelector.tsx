@@ -48,7 +48,26 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
         throw new Error('Failed to fetch organizations');
       }
       const data = await response.json();
-      setProjects(data);
+      
+      // Debug: log raw data from backend
+      console.log('Raw API data:', data);
+      
+      // Map snake_case from backend to camelCase for frontend
+      const mappedProjects = data.map((project: any) => {
+        const mapped = {
+          id: String(project.id),
+          name: project.name,
+          description: project.description || '',
+          status: project.status,
+          defectsCount: project.defects_count || 0,
+          teamSize: project.team_size || 0,
+          lastDefectDate: project.last_defect_date || null
+        };
+        console.log('Mapped project:', mapped);
+        return mapped;
+      });
+      
+      setProjects(mappedProjects);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error fetching projects:', err);

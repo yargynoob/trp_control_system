@@ -47,6 +47,7 @@ class Project(ProjectInDB):
     """Project response schema."""
     defects_count: Optional[int] = 0
     team_size: Optional[int] = 0
+    last_defect_date: Optional[datetime] = None
 
 
 class ProjectDetail(Project):

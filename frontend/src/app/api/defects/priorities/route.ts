@@ -3,7 +3,7 @@ import { getBackendUrl } from '@/utils/config';
 
 export async function GET() {
   try {
-    const response = await fetch(getBackendUrl('users'), {
+    const response = await fetch(getBackendUrl('defects/priorities'), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

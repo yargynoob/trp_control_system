@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, CheckConstraint, func
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -10,10 +10,10 @@ class Notification(Base):
     id = Column(Integer, primary_key=True, index=True)
     recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     sender_id = Column(Integer, ForeignKey("users.id"))
-    message = Column(Text)
+    defect_id = Column(Integer, ForeignKey("defects.id", ondelete="CASCADE"))
     
     title = Column(String(255), nullable=False)
-    message = Column(String)
+    message = Column(Text)
     notification_type = Column(String(50), nullable=False)
     
     is_read = Column(Boolean, default=False)

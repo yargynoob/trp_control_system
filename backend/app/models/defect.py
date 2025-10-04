@@ -52,8 +52,11 @@ class Priority(Base):
 
 
 class DefectCategory(Base):
+    """Defect category model."""
+    
     __tablename__ = "defect_categories"
     
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     description = Column(String)
     parent_id = Column(Integer, ForeignKey("defect_categories.id"))
@@ -63,6 +66,9 @@ class DefectCategory(Base):
     
     def __repr__(self):
         return f"<DefectCategory {self.name}>"
+
+
+class Defect(Base):
     """Defect model."""
     
     __tablename__ = "defects"
@@ -101,13 +107,12 @@ class DefectCategory(Base):
         ),
     )
     
-    actual_hours = Column(Integer)
-    
     project = relationship("Project", back_populates="defects")
     category = relationship("DefectCategory", back_populates="defects")
     status = relationship("DefectStatus", back_populates="defects")
     priority = relationship("Priority", back_populates="defects")
     reporter = relationship("User", foreign_keys=[reporter_id], back_populates="reported_defects")
+    assignee = relationship("User", foreign_keys=[assignee_id], back_populates="assigned_defects")
     comments = relationship("Comment", back_populates="defect", cascade="all, delete-orphan")
     file_attachments = relationship("FileAttachment", back_populates="defect", cascade="all, delete-orphan")
     change_logs = relationship("ChangeLog", back_populates="defect", cascade="all, delete-orphan")

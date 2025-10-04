@@ -55,9 +55,9 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
 
   useEffect(() => {
     const filtered = users.filter((user) =>
-    user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchQuery.toLowerCase())
+    (user.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (user.lastName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (user.username || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredUsers(filtered);
   }, [users, searchQuery]);
@@ -79,14 +79,17 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
   };
 
   const handleAddUser = (user: User, role: string) => {
-    if (selectedUsers.find((su) => su.userId === user.id)) {
+    // Check if user is already selected (compare as strings)
+    const isAlreadySelected = selectedUsers.some((su) => String(su.userId) === String(user.id));
+    if (isAlreadySelected) {
+      console.log('User already selected:', user.id);
       return;
     }
 
     const newSelectedUser: SelectedUser = {
       userId: user.id,
       role: role,
-      userName: `${user.firstName} ${user.lastName}`
+      userName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username
     };
 
     setSelectedUsers((prev) => [...prev, newSelectedUser]);
@@ -116,7 +119,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
         },
         body: JSON.stringify({
           ...formData,
-          userRoles: selectedUsers
+          user_roles: selectedUsers
         })
       });
 
@@ -234,7 +237,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
                 <div key={user.id} className="flex items-center justify-between p-3 border-b border-[#f8f9fa] last:border-b-0">
                     <div className="flex-1">
                       <div className="text-sm font-medium text-[#212529]">
-                        {user.firstName} {user.lastName}
+                        {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
                       </div>
                       <div className="text-xs text-[#6c757d]">ID: {user.id} • {user.email}</div>
                     </div>
@@ -243,10 +246,10 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
                       size="sm"
                       variant="outline"
                       onClick={() => handleAddUser(user, 'engineer')}
-                      disabled={!!selectedUsers.find((su) => su.userId === user.id)}
+                      disabled={selectedUsers.some((su) => String(su.userId) === String(user.id))}
                       className="text-xs h-7 px-3">
 
-                        {selectedUsers.find((su) => su.userId === user.id) ? 'Добавлен' : 'Добавить'}
+                        {selectedUsers.some((su) => String(su.userId) === String(user.id)) ? 'Добавлен' : 'Добавить'}
                       </Button>
                     </div>
                   </div>

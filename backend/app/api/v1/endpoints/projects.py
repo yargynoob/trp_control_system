@@ -25,19 +25,22 @@ def get_projects(
     
     result = []
     for project in projects:
-        # Get defects count
         defects_count = db.query(func.count(Defect.id)).filter(
             Defect.project_id == project.id
         ).scalar()
         
-        # Get team size
         team_size = db.query(func.count(func.distinct(UserRole.user_id))).filter(
             UserRole.project_id == project.id
         ).scalar()
         
+        last_defect_date = db.query(Defect.created_at).filter(
+            Defect.project_id == project.id
+        ).order_by(Defect.created_at.desc()).limit(1).scalar()
+        
         project_data = ProjectSchema.model_validate(project)
         project_data.defects_count = defects_count or 0
         project_data.team_size = team_size or 0
+        project_data.last_defect_date = last_defect_date
         
         result.append(project_data)
     
@@ -75,10 +78,15 @@ def get_project(
         UserRole.project_id == project.id
     ).scalar()
     
+    last_defect_date = db.query(Defect.created_at).filter(
+        Defect.project_id == project.id
+    ).order_by(Defect.created_at.desc()).limit(1).scalar()
+    
     project_data = ProjectDetail.model_validate(project)
     project_data.users = users_data
     project_data.defects_count = defects_count or 0
     project_data.team_size = team_size or 0
+    project_data.last_defect_date = last_defect_date
     
     return project_data
 
@@ -113,7 +121,13 @@ def create_project(
         db.commit()
         db.refresh(db_project)
         
-        return db_project
+        # Add statistics for response
+        project_response = ProjectSchema.model_validate(db_project)
+        project_response.defects_count = 0
+        project_response.team_size = len(project_in.user_roles) if project_in.user_roles else 0
+        project_response.last_defect_date = None
+        
+        return project_response
         
     except Exception as e:
         db.rollback()
@@ -159,7 +173,25 @@ def update_project(
         db.commit()
         db.refresh(project)
         
-        return project
+        # Add statistics for response
+        defects_count = db.query(func.count(Defect.id)).filter(
+            Defect.project_id == project_id
+        ).scalar()
+        
+        team_size = db.query(func.count(func.distinct(UserRole.user_id))).filter(
+            UserRole.project_id == project_id
+        ).scalar()
+        
+        last_defect_date = db.query(Defect.created_at).filter(
+            Defect.project_id == project_id
+        ).order_by(Defect.created_at.desc()).limit(1).scalar()
+        
+        project_response = ProjectSchema.model_validate(project)
+        project_response.defects_count = defects_count or 0
+        project_response.team_size = team_size or 0
+        project_response.last_defect_date = last_defect_date
+        
+        return project_response
         
     except Exception as e:
         db.rollback()

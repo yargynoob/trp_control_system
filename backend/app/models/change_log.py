@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint, func
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -12,8 +12,7 @@ class ChangeLog(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     field_name = Column(String(100), nullable=False)
     old_value = Column(Text)
-    old_value = Column(String)
-    new_value = Column(String)
+    new_value = Column(Text)
     change_type = Column(String(20), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     
@@ -24,7 +23,6 @@ class ChangeLog(Base):
         ),
     )
     
-    # Relationships
     defect = relationship("Defect", back_populates="change_logs")
     user = relationship("User", back_populates="change_logs")
     

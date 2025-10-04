@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getBackendUrl } from '@/utils/config';
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    const response = await fetch(getBackendUrl('users'), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
+    const formData = await request.formData();
+
+    const response = await fetch(getBackendUrl('files/upload'), {
+      method: 'POST',
+      body: formData,
     });
 
     if (!response.ok) {
@@ -17,7 +16,7 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Backend connection error:', error);
     return NextResponse.json(
