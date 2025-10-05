@@ -32,6 +32,7 @@ class UserInDB(UserBase):
     
     id: int
     is_active: bool
+    is_superuser: bool = False
     date_joined: datetime
     last_login: Optional[datetime] = None
 
@@ -51,3 +52,4 @@ class UserList(BaseModel):
     last_name: Optional[str]
     email: EmailStr
     is_active: bool
+    is_superuser: bool = False

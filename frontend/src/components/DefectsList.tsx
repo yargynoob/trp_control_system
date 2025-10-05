@@ -35,9 +35,11 @@ interface FilterState {
 
 interface DefectsListProps {
   projectId: string;
+  canCreateDefect?: boolean;
+  userRole?: string;
 }
 
-export function DefectsList({ projectId }: DefectsListProps) {
+export function DefectsList({ projectId, canCreateDefect = true, userRole }: DefectsListProps) {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -67,8 +69,13 @@ export function DefectsList({ projectId }: DefectsListProps) {
   useEffect(() => {
     const updateOverdueDefects = async () => {
       try {
+        const token = localStorage.getItem('token');
         await fetch('/api/defects/update-overdue', {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         });
       } catch (error) {
         console.error('Error updating overdue defects:', error);
@@ -144,12 +151,14 @@ export function DefectsList({ projectId }: DefectsListProps) {
             >
               {showFilters ? 'Скрыть фильтры' : 'Показать фильтры'}
             </Button>
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-[#007bff] hover:bg-[#0056b3] text-white px-3 md:px-5 py-1.5 md:py-2.5 text-xs md:text-sm"
-            >
-              + Создать дефект
-            </Button>
+            {canCreateDefect && (
+              <Button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-[#007bff] hover:bg-[#0056b3] text-white px-3 md:px-5 py-1.5 md:py-2.5 text-xs md:text-sm"
+              >
+                + Создать дефект
+              </Button>
+            )}
           </div>
         </div>
 
@@ -176,6 +185,8 @@ export function DefectsList({ projectId }: DefectsListProps) {
             dateTo={dateTo}
             filters={filters}
             refreshKey={refreshKey}
+            canEditDefect={canCreateDefect}
+            userRole={userRole}
           />
         </div>
       </div>
@@ -185,6 +196,7 @@ export function DefectsList({ projectId }: DefectsListProps) {
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={handleCreateSuccess}
         projectId={projectId}
+        userRole={userRole}
       />
     </div>
   );

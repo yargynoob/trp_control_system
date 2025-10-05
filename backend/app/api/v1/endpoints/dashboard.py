@@ -11,7 +11,8 @@ from app.models.defect import Defect, DefectStatus, Priority
 from app.models.change_log import ChangeLog
 from app.models.user import User
 from app.models.project import Project
-from app.core.deps import get_current_user
+from app.models.role import UserRole, Role
+from app.core.deps import get_current_user, get_user_role_in_project
 
 router = APIRouter()
 
@@ -30,17 +31,37 @@ def get_project_metrics(
             detail="Project not found"
         )
     
-    total_defects = db.query(func.count(Defect.id)).filter(
-        Defect.project_id == project_id
+    if not current_user.is_superuser:
+        user_role = db.query(UserRole).filter(
+            UserRole.project_id == project_id,
+            UserRole.user_id == current_user.id
+        ).first()
+        
+        if not user_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this project"
+            )
+    
+    user_role_name = get_user_role_in_project(current_user.id, project_id, db)
+    is_engineer = user_role_name == 'engineer'
+    
+    defect_filter = Defect.project_id == project_id
+    if is_engineer:
+        defect_filter = and_(Defect.project_id == project_id, Defect.assignee_id == current_user.id)
+    
+    total_defects = db.query(func.count(Defect.id)).join(DefectStatus).filter(
+        defect_filter,
+        DefectStatus.name != 'closed'
     ).scalar()
     
     in_progress_count = db.query(func.count(Defect.id)).join(DefectStatus).filter(
-        Defect.project_id == project_id,
+        defect_filter,
         DefectStatus.name == 'in_progress'
     ).scalar()
     
     overdue_count = db.query(func.count(Defect.id)).join(DefectStatus).filter(
-        Defect.project_id == project_id,
+        defect_filter,
         Defect.due_date < date.today(),
         DefectStatus.is_final == False
     ).scalar()
@@ -66,9 +87,24 @@ def get_critical_defects(
             detail="Project not found"
         )
     
+    if not current_user.is_superuser:
+        user_role = db.query(UserRole).filter(
+            UserRole.project_id == project_id,
+            UserRole.user_id == current_user.id
+        ).first()
+        
+        if not user_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this project"
+            )
+    
+    user_role_name = get_user_role_in_project(current_user.id, project_id, db)
+    is_engineer = user_role_name == 'engineer'
+    
     critical_priority = db.query(Priority).filter(Priority.name == 'critical').first()
     
-    defects = db.query(
+    query = db.query(
         Defect,
         User,
         Priority,
@@ -91,7 +127,12 @@ def get_critical_defects(
             Defect.priority_id == critical_priority.id if critical_priority else False,
             Defect.due_date < date.today()
         )
-    ).order_by(
+    )
+    
+    if is_engineer:
+        query = query.filter(Defect.assignee_id == current_user.id)
+    
+    defects = query.order_by(
         Priority.urgency_level.desc(),
         Defect.created_at.asc()
     ).limit(2).all()
@@ -127,13 +168,33 @@ def get_recent_actions(
             detail="Project not found"
         )
     
-    change_logs = db.query(ChangeLog, User, Defect).join(
+    if not current_user.is_superuser:
+        user_role = db.query(UserRole).filter(
+            UserRole.project_id == project_id,
+            UserRole.user_id == current_user.id
+        ).first()
+        
+        if not user_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this project"
+            )
+    
+    user_role_name = get_user_role_in_project(current_user.id, project_id, db)
+    is_engineer = user_role_name == 'engineer'
+    
+    query = db.query(ChangeLog, User, Defect).join(
         User, ChangeLog.user_id == User.id
     ).join(
         Defect, ChangeLog.defect_id == Defect.id
     ).filter(
         Defect.project_id == project_id
-    ).order_by(
+    )
+    
+    if is_engineer:
+        query = query.filter(Defect.assignee_id == current_user.id)
+    
+    change_logs = query.order_by(
         ChangeLog.created_at.desc()
     ).limit(3).all()
     
@@ -168,6 +229,21 @@ def get_all_actions(
             detail="Project not found"
         )
     
+    if not current_user.is_superuser:
+        user_role = db.query(UserRole).filter(
+            UserRole.project_id == project_id,
+            UserRole.user_id == current_user.id
+        ).first()
+        
+        if not user_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this project"
+            )
+    
+    user_role_name = get_user_role_in_project(current_user.id, project_id, db)
+    is_engineer = user_role_name == 'engineer'
+    
     query = db.query(ChangeLog, User, Defect).join(
         User, ChangeLog.user_id == User.id
     ).join(
@@ -175,6 +251,9 @@ def get_all_actions(
     ).filter(
         Defect.project_id == project_id
     )
+    
+    if is_engineer:
+        query = query.filter(Defect.assignee_id == current_user.id)
     
     if search:
         search_pattern = f"%{search}%"
@@ -216,6 +295,8 @@ def _format_action(log: ChangeLog, db: Session) -> str:
         return "создал дефект"
     
     if log.change_type == 'delete':
+        if log.field_name == 'comment':
+            return "удалил комментарий"
         return "удалил дефект"
     
     if log.change_type == 'update':
@@ -261,6 +342,9 @@ def _format_action(log: ChangeLog, db: Session) -> str:
         
         return f'изменил статус с "{old_name}" на "{new_name}"'
     
+    if log.change_type == 'comment':
+        return "добавил комментарий"
+    
     return "выполнил действие"
 
 
@@ -289,7 +373,25 @@ def get_project_defects(
             detail="Project not found"
         )
     
+    if not current_user.is_superuser:
+        user_role = db.query(UserRole).filter(
+            UserRole.project_id == project_id,
+            UserRole.user_id == current_user.id
+        ).first()
+        
+        if not user_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this project"
+            )
+    
+    user_role_name = get_user_role_in_project(current_user.id, project_id, db)
+    is_engineer = user_role_name == 'engineer'
+    
     query = db.query(Defect).filter(Defect.project_id == project_id)
+    
+    if is_engineer:
+        query = query.filter(Defect.assignee_id == current_user.id)
     
     if search:
         search_pattern = f"%{search}%"
@@ -313,6 +415,7 @@ def get_project_defects(
             "priority": defect.priority.name,
             "priorityDisplay": defect.priority.display_name,
             "assignee": f"{defect.assignee.first_name} {defect.assignee.last_name}" if defect.assignee and defect.assignee.first_name else (defect.assignee.username if defect.assignee else None),
+            "assigneeId": defect.assignee_id,
             "reporter": f"{defect.reporter.first_name} {defect.reporter.last_name}" if defect.reporter.first_name else defect.reporter.username,
             "location": defect.location,
             "createdAt": defect.created_at.isoformat(),

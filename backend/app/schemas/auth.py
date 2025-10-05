@@ -38,6 +38,7 @@ class UserResponse(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     is_active: bool
+    is_superuser: bool = False
     
     class Config:
         from_attributes = True

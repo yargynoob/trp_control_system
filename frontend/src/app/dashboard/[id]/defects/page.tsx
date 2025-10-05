@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { Navigation } from '@/components/Navigation';
 import { DefectsList } from '@/components/DefectsList';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Project {
   id: string;
@@ -15,13 +16,21 @@ interface Project {
   defectsCount: number;
   teamSize: number;
   lastDefectDate: string | null;
+  currentUserRole?: string | null;
 }
 
 export default function DefectsPage() {
   const params = useParams();
+  const { user } = useAuth();
   const projectId = params.id as string;
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<Project | null>(null);
+  
+  const canCreateDefect = user?.is_superuser === true 
+    ? true 
+    : project?.currentUserRole 
+      ? project.currentUserRole !== 'supervisor'
+      : false;
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -50,7 +59,7 @@ export default function DefectsPage() {
     return (
       <main className="min-h-screen bg-white">
         <Header />
-        <Navigation activeTab="defects" projectSelected={false} />
+        <Navigation activeTab="defects" projectSelected={false} userRole={undefined} />
         <div className="p-6 text-center">
           <p className="text-[#6c757d]">Загрузка...</p>
         </div>
@@ -60,15 +69,22 @@ export default function DefectsPage() {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white">
         <Header />
-        <Navigation
-          activeTab="defects"
+        <Navigation 
+          activeTab="defects" 
           projectSelected={!!project}
           projectName={project?.name}
+          userRole={project?.currentUserRole || undefined}
         />
-        <DefectsList projectId={projectId} />
-      </main>
+        <div className="bg-[#f8f9fa]">
+          <DefectsList 
+            projectId={projectId} 
+            canCreateDefect={canCreateDefect}
+            userRole={project?.currentUserRole || undefined}
+          />
+        </div>
+      </div>
     </ProtectedRoute>
   );
 }

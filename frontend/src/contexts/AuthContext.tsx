@@ -10,6 +10,7 @@ interface User {
   first_name?: string;
   last_name?: string;
   is_active: boolean;
+  is_superuser?: boolean;
 }
 
 interface AuthContextType {
@@ -39,9 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
       
-      // Verify token is still valid
       verifyToken(storedToken).catch(() => {
-        // Token is invalid, clear everything
         logout();
       });
     }
@@ -89,11 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.access_token);
       setUser(data.user);
       
-      // Store in localStorage
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Redirect to organizations page
       router.push('/organizations');
     } catch (error) {
       console.error('Login error:', error);
@@ -133,11 +130,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.access_token);
       setUser(data.user);
       
-      // Store in localStorage
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Redirect to organizations page
       router.push('/organizations');
     } catch (error) {
       console.error('Registration error:', error);

@@ -7,12 +7,14 @@ export async function PUT(
 ) {
   try {
     const { id } = params;
+    const authHeader = request.headers.get('authorization');
     const body = await request.json();
 
     const response = await fetch(getBackendUrl(`defects/${id}`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
       },
       body: JSON.stringify(body),
     });
@@ -39,11 +41,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
+    const authHeader = request.headers.get('authorization');
 
     const response = await fetch(getBackendUrl(`defects/${id}`), {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
       },
     });
 

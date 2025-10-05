@@ -53,3 +53,4 @@ class Project(ProjectInDB):
 class ProjectDetail(Project):
     """Project detail schema with users."""
     users: Optional[List[dict]] = None
+    current_user_role: Optional[str] = Field(None, serialization_alias="currentUserRole")

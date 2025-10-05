@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getBackendUrl } from '@/utils/config';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authHeader = request.headers.get('authorization');
+    
     const response = await fetch(getBackendUrl('defects/priorities'), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
       },
       cache: 'no-store',
     });

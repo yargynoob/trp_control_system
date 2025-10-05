@@ -14,6 +14,7 @@ class User(Base):
     first_name = Column(String(30))
     last_name = Column(String(150))
     is_active = Column(Boolean, default=True, index=True)
+    is_superuser = Column(Boolean, default=False, index=True)
     date_joined = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(DateTime(timezone=True))
     

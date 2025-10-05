@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.user import User
+from app.models.role import UserRole, Role
 from app.schemas.user import User as UserSchema, UserList, UserCreate, UserUpdate
 from app.core.deps import get_current_user
 
@@ -16,11 +17,32 @@ router = APIRouter()
 def get_users(
     skip: int = 0,
     limit: int = 100,
+    project_id: int = None,
+    roles: str = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all users."""
-    users = db.query(User).filter(User.id != 1).offset(skip).limit(limit).all()
+    """Get all users (excludes superusers). 
+    
+    Optional filters:
+    - project_id: filter users by project
+    - roles: comma-separated role names (e.g. 'manager,engineer')
+    """
+    query = db.query(User).filter(User.is_superuser == False)
+    
+    # Filter by project and roles if specified
+    if project_id is not None:
+        query = query.join(UserRole, User.id == UserRole.user_id)
+        query = query.filter(UserRole.project_id == project_id)
+        
+        if roles:
+            role_list = [r.strip() for r in roles.split(',')]
+            query = query.join(Role, UserRole.role_id == Role.id)
+            query = query.filter(Role.name.in_(role_list))
+        
+        query = query.distinct()
+    
+    users = query.offset(skip).limit(limit).all()
     return users
 
 

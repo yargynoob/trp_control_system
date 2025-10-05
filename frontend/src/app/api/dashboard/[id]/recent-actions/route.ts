@@ -7,11 +7,13 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+    const authHeader = request.headers.get('authorization');
 
     const response = await fetch(getBackendUrl(`dashboard/${id}/recent-actions`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
       },
       cache: 'no-store',
     });

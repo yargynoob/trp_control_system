@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CreateOrganizationModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ const roles = [
 
 
 export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOrganizationModalProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -46,6 +48,8 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
   const [selectedUsers, setSelectedUsers] = useState<SelectedUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const isSuperuser = user?.is_superuser || false;
 
   useEffect(() => {
     if (isOpen) {
@@ -54,20 +58,25 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
   }, [isOpen]);
 
   useEffect(() => {
-    const filtered = users.filter((user) =>
-    (user.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (user.lastName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (user.username || '').toLowerCase().includes(searchQuery.toLowerCase())
+    let filtered = users.filter((u) =>
+      (u.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.lastName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.username || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
+    
+    if (!isSuperuser && user) {
+      filtered = filtered.filter((u) => String(u.id) !== String(user.id));
+    }
+    
     setFilteredUsers(filtered);
-  }, [users, searchQuery]);
+  }, [users, searchQuery, isSuperuser, user]);
 
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/v1/users/', {
+      const response = await fetch('/api/users', {
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -167,6 +176,14 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
               <p className="text-sm text-red-600">{error}</p>
             </div>
           }
+          
+          {!isSuperuser && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-700 font-medium">
+                ℹ️ Вы будете автоматически назначены руководителем этой организации
+              </p>
+            </div>
+          )}
 
           <div className="space-y-6">
             <div className="space-y-4">

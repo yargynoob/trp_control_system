@@ -49,7 +49,13 @@ export function AllActionsModal({ isOpen, onClose, projectId }: AllActionsModalP
   const fetchAllActions = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/dashboard/${projectId}/all-actions`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/dashboard/${projectId}/all-actions`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setActions(data);

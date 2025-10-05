@@ -30,6 +30,7 @@ class DefectUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
     description: Optional[str] = None
     location: Optional[str] = Field(None, max_length=500)
+    status: Optional[str] = None
     status_id: Optional[int] = None
     priority_id: Optional[int] = None
     assignee_id: Optional[int] = None
@@ -69,6 +70,7 @@ class DefectList(BaseModel):
     status: str
     priority: str
     location: Optional[str]
+    assignee_id: Optional[int]
     assignee_name: Optional[str]
     reporter_name: Optional[str]
     created_at: datetime

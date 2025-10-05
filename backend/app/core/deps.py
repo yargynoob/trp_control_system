@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.user import User
+from app.models.role import UserRole, Role
 from app.core.security import decode_access_token
 
 security = HTTPBearer()
@@ -96,3 +97,23 @@ def get_optional_current_user(
         return user
     except Exception:
         return None
+
+
+def get_user_role_in_project(user_id: int, project_id: int, db: Session) -> Optional[str]:
+    """Get user's role name in a project."""
+    user_role = db.query(UserRole, Role).join(
+        Role, UserRole.role_id == Role.id
+    ).filter(
+        UserRole.user_id == user_id,
+        UserRole.project_id == project_id
+    ).first()
+    
+    if user_role:
+        return user_role[1].name
+    return None
+
+
+def user_has_role_in_project(user_id: int, project_id: int, role_names: list[str], db: Session) -> bool:
+    """Check if user has one of the specified roles in a project."""
+    user_role_name = get_user_role_in_project(user_id, project_id, db)
+    return user_role_name in role_names if user_role_name else False

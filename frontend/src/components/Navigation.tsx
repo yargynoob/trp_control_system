@@ -6,18 +6,30 @@ interface NavigationProps {
   activeTab: string;
   projectSelected?: boolean;
   projectName?: string;
+  userRole?: string;
 }
 
-export function Navigation({ activeTab, projectSelected = false, projectName }: NavigationProps) {
+export function Navigation({ activeTab, projectSelected = false, projectName, userRole }: NavigationProps) {
   const router = useRouter();
   const params = useParams();
   const projectId = params?.id as string;
 
   const tabs = [
-  { id: 'projects', label: 'Проекты', path: '/organizations' },
-  { id: 'dashboard', label: 'Дашборд', path: `/dashboard/${projectId}`, requiresProject: true },
-  { id: 'defects', label: 'Дефекты', path: `/dashboard/${projectId}/defects`, requiresProject: true },
-  { id: 'reports', label: 'Отчеты', path: `/dashboard/${projectId}/reports`, requiresProject: true }];
+    { id: 'projects', label: 'Проекты', path: '/organizations' },
+    { id: 'dashboard', label: 'Дашборд', path: `/dashboard/${projectId}`, requiresProject: true },
+    { id: 'defects', label: 'Дефекты', path: `/dashboard/${projectId}/defects`, requiresProject: true },
+    { id: 'reports', label: 'Отчеты', path: `/dashboard/${projectId}/reports`, requiresProject: true, hideForRoles: ['manager', 'engineer'] }
+  ];
+  
+  const visibleTabs = tabs.filter(tab => {
+    if (tab.requiresProject && !projectSelected) {
+      return false;
+    }
+    if (tab.hideForRoles && userRole && tab.hideForRoles.includes(userRole)) {
+      return false;
+    }
+    return true;
+  });
 
 
   const handleTabClick = (tab: any) => {
@@ -31,7 +43,7 @@ export function Navigation({ activeTab, projectSelected = false, projectName }: 
     <nav className="bg-white border-b border-[#dee2e6]">
       <div className="px-4">
         <div className="flex items-center space-x-1">
-          {tabs.map((tab) => {
+          {visibleTabs.map((tab) => {
             const isDisabled = tab.requiresProject && !projectSelected;
             const isActive = activeTab === tab.id;
 

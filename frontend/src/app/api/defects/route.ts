@@ -3,12 +3,14 @@ import { getBackendUrl } from '@/utils/config';
 
 export async function POST(request: Request) {
   try {
+    const authHeader = request.headers.get('authorization');
     const body = await request.json();
 
     const response = await fetch(getBackendUrl('defects'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
       },
       body: JSON.stringify(body),
     });

@@ -39,7 +39,13 @@ export function RecentActions({ projectId }: RecentActionsProps) {
   useEffect(() => {
     const fetchRecentActions = async () => {
       try {
-        const response = await fetch(`/api/dashboard/${projectId}/recent-actions`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/dashboard/${projectId}/recent-actions`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           setActions(data);

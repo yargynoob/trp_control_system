@@ -3,10 +3,14 @@ import { getBackendUrl } from '@/utils/config';
 
 export async function POST(request: Request) {
   try {
+    const authHeader = request.headers.get('authorization');
     const formData = await request.formData();
 
     const response = await fetch(getBackendUrl('files/upload'), {
       method: 'POST',
+      headers: {
+        ...(authHeader && { 'Authorization': authHeader }),
+      },
       body: formData,
     });
 

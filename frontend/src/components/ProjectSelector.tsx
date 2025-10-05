@@ -42,7 +42,7 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
-  const isAdmin = user?.id === 1;
+  const isAdmin = user?.is_superuser === true;
 
   const fetchProjects = async () => {
     try {
@@ -150,14 +150,12 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
             className="border-[#dee2e6] focus:border-[#007bff] focus:ring-[#007bff] text-[#212529]"
           />
         </div>
-        {isAdmin && (
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-[#007bff] hover:bg-[#0056b3] text-white"
-          >
-            + Добавить организацию
-          </Button>
-        )}
+        <Button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="bg-[#007bff] hover:bg-[#0056b3] text-white"
+        >
+          + Добавить организацию
+        </Button>
       </div>
 
       {projects.length === 0 && !error ? (
@@ -172,19 +170,14 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
               Вы пока не состоите ни в одной организации
             </h3>
             <p className="text-[#6c757d] mb-6">
-              {isAdmin 
-                ? 'Создайте новую организацию для начала работы'
-                : 'Дождитесь приглашения от администратора для доступа к организациям'
-              }
+              Создайте новую организацию для начала работы или дождитесь приглашения от других пользователей
             </p>
-            {isAdmin && (
-              <Button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="bg-[#007bff] hover:bg-[#0056b3] text-white"
-              >
-                Создать организацию
-              </Button>
-            )}
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-[#007bff] hover:bg-[#0056b3] text-white"
+            >
+              Создать организацию
+            </Button>
           </div>
         </div>
       ) : (

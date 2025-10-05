@@ -18,7 +18,7 @@ class ChangeLog(Base):
     
     __table_args__ = (
         CheckConstraint(
-            "change_type IN ('create', 'update', 'delete', 'status_change')",
+            "change_type IN ('create', 'update', 'delete', 'status_change', 'comment')",
             name="change_type_check"
         ),
     )

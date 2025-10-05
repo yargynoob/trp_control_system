@@ -6,12 +6,14 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CreateDefectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   projectId: string;
+  userRole?: string;
 }
 
 interface Priority {
@@ -37,7 +39,9 @@ interface AttachedFile {
 }
 
 
-export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: CreateDefectModalProps) {
+export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId, userRole }: CreateDefectModalProps) {
+  const { user } = useAuth();
+  const isEngineer = userRole === 'engineer';
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -63,7 +67,13 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users?project_id=${projectId}&roles=manager,engineer`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -75,7 +85,13 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
 
   const fetchPriorities = async () => {
     try {
-      const response = await fetch('/api/defects/priorities');
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/defects/priorities', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setPriorities(data);
@@ -103,12 +119,16 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
     if (!files) return;
 
     Array.from(files).forEach((file) => {
-      const fileType = file.type.startsWith('image/') ? 'image' : 'document';
+      if (!file.type.startsWith('image/')) {
+        setError('Можно загружать только изображения');
+        return;
+      }
+      
       const newFile: AttachedFile = {
         id: Math.random().toString(36).substr(2, 9),
         name: file.name,
         size: formatFileSize(file.size),
-        type: fileType,
+        type: 'image',
         file: file
       };
       setAttachedFiles((prev) => [...prev, newFile]);
@@ -136,11 +156,15 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
       const formData = new FormData();
       formData.append('file', attachedFile.file);
       formData.append('defect_id', defectId);
-      formData.append('user_id', '1');
+      formData.append('user_id', user?.id?.toString() || '1');
 
       try {
+        const token = localStorage.getItem('token');
         const response = await fetch('/api/defects/upload', {
           method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
           body: formData
         });
 
@@ -168,10 +192,12 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
         throw new Error('Приоритет не найден');
       }
 
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/defects', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           title: formData.title,
@@ -181,7 +207,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
           priority_id: priorityObj.id,
           assignee_id: formData.assigneeId ? parseInt(formData.assigneeId) : null,
           due_date: formData.deadline || null,
-          reporter_id: 1
+          reporter_id: user?.id || 1
         })
       });
 
@@ -281,26 +307,28 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
 
                 </div>
 
-                <div>
-                  <Label htmlFor="deadline" className="text-sm font-medium text-[#212529]">Срок:</Label>
-                  <Input
-                    id="deadline"
-                    type="date"
-                    value={formData.deadline}
-                    onChange={(e) => handleInputChange('deadline', e.target.value)}
-                    className="mt-1 bg-white border-[#ced4da]" />
-
-                </div>
+                {!isEngineer && (
+                  <div>
+                    <Label htmlFor="deadline" className="text-sm font-medium text-[#212529]">Срок:</Label>
+                    <Input
+                      id="deadline"
+                      type="date"
+                      value={formData.deadline}
+                      onChange={(e) => handleInputChange('deadline', e.target.value)}
+                      className="mt-1 bg-white border-[#ced4da]" />
+                  </div>
+                )}
 
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-[16px] font-semibold text-[#212529] uppercase tracking-wide mb-4">
-                НАЗНАЧЕНИЕ И ПРИОРИТЕТ
-              </h3>
-              
+            {!isEngineer && (
               <div className="space-y-4">
+                <h3 className="text-[16px] font-semibold text-[#212529] uppercase tracking-wide mb-4">
+                  НАЗНАЧЕНИЕ И ПРИОРИТЕТ
+                </h3>
+                
+                <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium text-[#212529]">Приоритет: <span className="text-[#dc3545]">*</span></Label>
                   <select
@@ -377,9 +405,10 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
                       </div>
                     }
                   </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -391,7 +420,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
               <input
                 type="file"
                 multiple
-                accept="image/*,.pdf,.doc,.docx"
+                accept="image/*"
                 onChange={handleFileUpload}
                 className="hidden"
                 id="file-upload" />

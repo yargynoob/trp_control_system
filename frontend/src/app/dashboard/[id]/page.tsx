@@ -10,6 +10,7 @@ import { RecentActions } from '@/components/RecentActions';
 import { EditOrganizationModal } from '@/components/EditOrganizationModal';
 import { MetricCards } from '@/components/MetricCards';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Project {
   id: string;
@@ -25,17 +26,23 @@ interface Project {
     role: string;
     userName: string;
   }>;
+  currentUserRole?: string | null;
 }
 
 export default function DashboardPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  const canEditOrganization = user?.is_superuser === true 
+    ? true 
+    : project?.currentUserRole === 'supervisor';
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -94,8 +101,13 @@ export default function DashboardPage() {
     if (!project) return;
     setDeleteLoading(true);
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/organizations/${params.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -154,7 +166,8 @@ export default function DashboardPage() {
       <Navigation
         activeTab="dashboard"
         projectSelected={!!project}
-        projectName={project?.name} />
+        projectName={project?.name}
+        userRole={project?.currentUserRole || undefined} />
 
       
       <div className="bg-white border-b border-[#dee2e6]">
@@ -165,13 +178,15 @@ export default function DashboardPage() {
             </h1>
            
           </div>
-          <Button
-            onClick={() => setIsEditModalOpen(true)}
-            variant="outline"
-            className="text-[#007bff] border-[#007bff] hover:bg-[#007bff] hover:text-white"
-          >
-            Редактировать
-          </Button>
+          {canEditOrganization && (
+            <Button
+              onClick={() => setIsEditModalOpen(true)}
+              variant="outline"
+              className="text-[#007bff] border-[#007bff] hover:bg-[#007bff] hover:text-white"
+            >
+              Редактировать
+            </Button>
+          )}
         </div>
       </div>
 
@@ -184,14 +199,15 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="px-3 md:px-6 pb-6 border-t border-[#dee2e6] pt-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-red-800 mb-2">
-            Опасная зона
-          </h3>
-          <p className="text-sm text-red-700 mb-4">
-            Удаление организации приведет к безвозвратной потере всех данных, включая дефекты, комментарии и файлы.
-          </p>
+      {canEditOrganization && (
+        <div className="px-3 md:px-6 pb-6 border-t border-[#dee2e6] pt-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-800 mb-2">
+              Опасная зона
+            </h3>
+            <p className="text-sm text-red-700 mb-4">
+              Удаление организации приведет к безвозвратной потере всех данных, включая дефекты, комментарии и файлы.
+            </p>
           
           {!showDeleteConfirm ?
           <button
@@ -231,6 +247,7 @@ export default function DashboardPage() {
           }
         </div>
       </div>
+      )}
 
       <EditOrganizationModal
         isOpen={isEditModalOpen}

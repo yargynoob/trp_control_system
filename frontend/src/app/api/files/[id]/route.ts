@@ -1,21 +1,18 @@
 import { NextResponse } from 'next/server';
 import { getBackendUrl } from '@/utils/config';
 
-export async function GET(
+export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
     const authHeader = request.headers.get('authorization');
-
-    const response = await fetch(getBackendUrl(`dashboard/${id}/metrics`), {
-      method: 'GET',
+    
+    const response = await fetch(getBackendUrl(`files/${params.id}`), {
+      method: 'DELETE',
       headers: {
-        'Content-Type': 'application/json',
         ...(authHeader && { 'Authorization': authHeader }),
       },
-      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -23,12 +20,16 @@ export async function GET(
       return NextResponse.json(error, { status: response.status });
     }
 
-    const data = await response.json();
+    if (response.status === 204) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+
+    const data = await response.json().catch(() => ({ success: true }));
     return NextResponse.json(data);
   } catch (error) {
     console.error('Backend connection error:', error);
     return NextResponse.json(
-      { error: 'Failed to connect to backend' },
+      { error: 'Failed to delete file' },
       { status: 503 }
     );
   }

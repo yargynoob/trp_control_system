@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getBackendUrl } from '@/utils/config';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const response = await fetch(getBackendUrl('defecs/update-overdue'), {
+    const authHeader = request.headers.get('authorization');
+    
+    const response = await fetch(getBackendUrl('defects/update-overdue'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
       },
     });
 

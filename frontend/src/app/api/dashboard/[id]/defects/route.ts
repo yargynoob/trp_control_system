@@ -7,6 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+    const authHeader = request.headers.get('authorization');
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
 
@@ -19,6 +20,7 @@ export async function GET(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
       },
       cache: 'no-store',
     });

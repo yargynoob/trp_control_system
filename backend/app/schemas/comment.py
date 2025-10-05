@@ -8,7 +8,6 @@ from pydantic import BaseModel, Field, ConfigDict
 class CommentBase(BaseModel):
     """Base comment schema."""
     content: str = Field(..., min_length=1)
-    parent_id: Optional[int] = None
 
 
 class CommentCreate(CommentBase):
@@ -31,7 +30,6 @@ class CommentInDB(CommentBase):
     author_id: int
     created_at: datetime
     updated_at: datetime
-    is_deleted: bool
 
 
 class Comment(CommentInDB):

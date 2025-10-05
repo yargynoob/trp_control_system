@@ -6,10 +6,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
     const authHeader = request.headers.get('authorization');
-
-    const response = await fetch(getBackendUrl(`dashboard/${id}/metrics`), {
+    
+    const response = await fetch(getBackendUrl(`files/defect/${params.id}`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -65,7 +65,13 @@ export function CriticalDefects({ projectId }: CriticalDefectsProps) {
   useEffect(() => {
     const fetchCriticalDefects = async () => {
       try {
-        const response = await fetch(`/api/dashboard/${projectId}/critical-defects`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/dashboard/${projectId}/critical-defects`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           setDefects(data);

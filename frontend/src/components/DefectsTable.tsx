@@ -15,6 +15,7 @@ interface Defect {
   priority: "low" | "medium" | "high" | "critical";
   priorityDisplay: string;
   assignee: string;
+  assigneeId?: number;
   reporter: string;
   location: string;
   createdAt: string;
@@ -47,6 +48,8 @@ interface DefectsTableProps {
   dateTo: string;
   filters: FilterState;
   refreshKey?: number;
+  canEditDefect?: boolean;
+  userRole?: string;
 }
 
 const statusColors = {
@@ -78,7 +81,9 @@ export function DefectsTable({
   dateFrom, 
   dateTo, 
   filters,
-  refreshKey 
+  canEditDefect = true,
+  refreshKey,
+  userRole
 }: DefectsTableProps) {
   const [defects, setDefects] = useState<Defect[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +100,13 @@ export function DefectsTable({
     const fetchDefects = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/dashboard/${projectId}/defects?search=${encodeURIComponent(searchQuery)}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/dashboard/${projectId}/defects?search=${encodeURIComponent(searchQuery)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch defects');
         }
@@ -113,13 +124,20 @@ export function DefectsTable({
   }, [projectId, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo, refreshKey]);
 
   const handleDefectClick = (defect: Defect) => {
+    // Everyone can view defects, even supervisors (they just can't edit)
     setSelectedDefect(defect);
     setIsEditModalOpen(true);
   };
 
   const handleEditSuccess = async () => {
     try {
-      const response = await fetch(`/api/dashboard/${projectId}/defects?search=${encodeURIComponent(searchQuery)}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/dashboard/${projectId}/defects?search=${encodeURIComponent(searchQuery)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setDefects(data);
@@ -170,8 +188,14 @@ const handleSort = (field: keyof Defect) => {
     
     if (window.confirm(`Вы уверены, что хотите удалить выбранные дефекты (${selectedDefects.length})?`)) {
       try {
+        const token = localStorage.getItem('token');
         const deletePromises = selectedDefects.map(defectId => 
-          fetch(`/api/defects/${defectId}`, { method: 'DELETE' })
+          fetch(`/api/defects/${defectId}`, { 
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
         );
         
         await Promise.all(deletePromises);
@@ -266,13 +290,15 @@ const handleSort = (field: keyof Defect) => {
           <table className="w-full border-collapse table-fixed">
             <thead>
               <tr className="bg-[#f8f9fa]">
-              <th className="w-12 py-3 pl-6 pr-4 text-left">
+              {canEditDefect && (
+                <th className="w-12 py-3 pl-6 pr-4 text-left">
                   <Checkbox
                     checked={selectedDefects.length === filteredDefects.length && filteredDefects.length > 0}
                     onCheckedChange={handleSelectAll}
                     className="data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
                   />
                 </th>
+              )}
                 <th 
                   className="w-20 text-left py-3 px-4 font-semibold text-[#212529] text-sm cursor-pointer"
                   onClick={() => handleSort("id")}
@@ -344,21 +370,23 @@ const handleSort = (field: keyof Defect) => {
                   key={defect.id} 
                   className="border-b border-[#f8f9fa] hover:bg-[#f8f9fa] transition-colors"
                 >
-                  <td className="py-3 pl-6 pr-4 w-12">
-                    <Checkbox
-                      checked={selectedDefects.includes(defect.id)}
-                      onCheckedChange={() => handleSelectDefect(defect.id)}
-                      className="data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
-                    />
-                  </td>
+                  {canEditDefect && (
+                    <td className="py-3 pl-6 pr-4 w-12">
+                      <Checkbox
+                        checked={selectedDefects.includes(defect.id)}
+                        onCheckedChange={() => handleSelectDefect(defect.id)}
+                        className="data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
+                      />
+                    </td>
+                  )}
                   <td 
-                    className="py-3 px-4 text-sm font-medium text-[#007bff] cursor-pointer"
+                    className={`py-3 px-4 text-sm font-medium text-[#007bff] ${canEditDefect ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={() => handleDefectClick(defect)}
                   >
                     TRP-{defect.id}
                   </td>
                   <td 
-                    className="py-3 px-4 cursor-pointer"
+                    className={`py-3 px-4 ${canEditDefect ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={() => handleDefectClick(defect)}
                   >
                     <div>
@@ -392,7 +420,6 @@ const handleSort = (field: keyof Defect) => {
         </div>
       </div>
 
-      {/* Pagination and Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Button
@@ -417,20 +444,24 @@ const handleSort = (field: keyof Defect) => {
         </div>
 
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
-            <FileText className="w-4 h-4 mr-2" />
-            Экспорт
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={selectedDefects.length === 0}
-            className="text-[#dc3545] hover:text-[#dc3545] hover:bg-red-50"
-            onClick={handleDeleteSelected}
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Удалить ({selectedDefects.length})
-          </Button>
+          {(!userRole || userRole === 'supervisor') && (
+            <Button variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              Экспорт
+            </Button>
+          )}
+          {canEditDefect && userRole !== 'engineer' && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={selectedDefects.length === 0}
+              className="text-[#dc3545] hover:text-[#dc3545] hover:bg-red-50"
+              onClick={handleDeleteSelected}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Удалить ({selectedDefects.length})
+            </Button>
+          )}
         </div>
       </div>
 
@@ -442,6 +473,8 @@ const handleSort = (field: keyof Defect) => {
         }}
         onSuccess={handleEditSuccess}
         defect={selectedDefect}
+        userRole={userRole}
+        projectId={projectId}
       />
     </div>
   );
