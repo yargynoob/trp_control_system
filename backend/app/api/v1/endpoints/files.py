@@ -13,7 +13,9 @@ from app.core.config import settings
 from app.models.file_attachment import FileAttachment
 from app.models.defect import Defect
 from app.models.change_log import ChangeLog
+from app.models.user import User
 from app.schemas.file_attachment import FileAttachment as FileAttachmentSchema
+from app.core.deps import get_current_user
 
 router = APIRouter()
 
@@ -47,7 +49,7 @@ def save_upload_file(upload_file: UploadFile, defect_id: int) -> dict:
 async def upload_file(
     file: UploadFile = File(...),
     defect_id: int = Form(...),
-    user_id: int = Form(1),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Upload file to defect."""
@@ -85,14 +87,14 @@ async def upload_file(
             file_path=file_data["file_path"],
             file_size=file_data["file_size"],
             content_type=file_data["content_type"],
-            uploaded_by=user_id
+            uploaded_by=current_user.id
         )
         db.add(db_file)
         db.flush()
         
         change_log = ChangeLog(
             defect_id=defect_id,
-            user_id=user_id,
+            user_id=current_user.id,
             field_name="attachment",
             new_value=file_data["original_name"],
             change_type="update"
@@ -115,6 +117,7 @@ async def upload_file(
 @router.get("/defect/{defect_id}", response_model=List[FileAttachmentSchema])
 def get_defect_files(
     defect_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all files for a defect."""
@@ -136,6 +139,7 @@ def get_defect_files(
 @router.get("/download/{file_id}")
 def download_file(
     file_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Download file."""
@@ -167,6 +171,7 @@ def download_file(
 @router.delete("/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_file(
     file_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete file (soft delete)."""

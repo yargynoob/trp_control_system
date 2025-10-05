@@ -64,7 +64,13 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8000/api/v1/users/', {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -79,7 +85,6 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
   };
 
   const handleAddUser = (user: User, role: string) => {
-    // Check if user is already selected (compare as strings)
     const isAlreadySelected = selectedUsers.some((su) => String(su.userId) === String(user.id));
     if (isAlreadySelected) {
       console.log('User already selected:', user.id);
@@ -112,9 +117,11 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
     setError(null);
 
     try {
-      const response = await fetch('/api/organizations', {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8000/api/v1/organizations/', {
         method: 'POST',
         headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -124,7 +131,8 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create organization');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to create organization');
       }
 
       onSuccess();
@@ -176,7 +184,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
                     placeholder="Введите название..."
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="mt-1 bg-white border-[#ced4da]" />
+                    className="text-[#212529] mt-1 bg-white border-[#ced4da]" />
 
                 </div>
 
@@ -189,7 +197,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
                     placeholder="Описание деятельности организации..."
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="mt-1 h-[100px] bg-white border-[#ced4da] resize-none" />
+                    className="text-[#212529] mt-1 h-[100px] bg-white border-[#ced4da] resize-none" />
 
                 </div>
 
@@ -202,7 +210,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
                     placeholder="Адрес организации..."
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
-                    className="mt-1 bg-white border-[#ced4da]" />
+                    className="text-[#212529] mt-1 bg-white border-[#ced4da]" />
 
                 </div>
 
@@ -223,7 +231,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
                   placeholder="Поиск сотрудника..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="mt-1 bg-white border-[#ced4da]" />
+                  className="text-[#212529] mt-1 bg-white border-[#ced4da]" />
 
               </div>
 
@@ -247,7 +255,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
                       variant="outline"
                       onClick={() => handleAddUser(user, 'engineer')}
                       disabled={selectedUsers.some((su) => String(su.userId) === String(user.id))}
-                      className="text-xs h-7 px-3">
+                      className="text-xs text-[#212529] h-7 px-3">
 
                         {selectedUsers.some((su) => String(su.userId) === String(user.id)) ? 'Добавлен' : 'Добавить'}
                       </Button>
@@ -308,8 +316,8 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
           </div>
         </div>  
         <div className="p-6 border-t border-[#dee2e6]">
-          <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={onClose} disabled={loading}>
+          <div className="flex items-center justify-between ">
+            <Button variant="outline" onClick={onClose} disabled={loading} className="text-[#212529]">
               Отмена
             </Button>
             <Button

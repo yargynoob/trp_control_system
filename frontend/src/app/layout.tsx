@@ -1,24 +1,24 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-
-const inter = Inter({ subsets: ['latin', 'cyrillic'] });
+import type { Metadata } from "next";
+import "./globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: 'Система управления дефектами',
-  description: 'Система контроля дефектов на промышленных предприятиях'
+  title: "TRP Control System",
+  description: "Система управления дефектами проектов",
 };
 
 export default function RootLayout({
-  children
-
-
-}: {children: React.ReactNode;}) {
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="ru">
-      <body className={inter.className + ' bg-white text-gray-900'}>
-        {children}
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
-    </html>);
-
+    </html>
+  );
 }

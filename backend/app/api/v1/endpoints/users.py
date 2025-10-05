@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.user import User
 from app.schemas.user import User as UserSchema, UserList, UserCreate, UserUpdate
+from app.core.deps import get_current_user
 
 router = APIRouter()
 
@@ -15,6 +16,7 @@ router = APIRouter()
 def get_users(
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all users."""
@@ -25,6 +27,7 @@ def get_users(
 @router.get("/{user_id}", response_model=UserSchema)
 def get_user(
     user_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get user by ID."""
@@ -40,6 +43,7 @@ def get_user(
 @router.post("/", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
 def create_user(
     user_in: UserCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Create new user."""
@@ -73,6 +77,7 @@ def create_user(
 def update_user(
     user_id: int,
     user_in: UserUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update user."""
@@ -96,6 +101,7 @@ def update_user(
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
     user_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete user."""

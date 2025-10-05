@@ -11,6 +11,7 @@ from app.models.defect import Defect, DefectStatus, Priority
 from app.models.change_log import ChangeLog
 from app.models.user import User
 from app.models.project import Project
+from app.core.deps import get_current_user
 
 router = APIRouter()
 
@@ -18,6 +19,7 @@ router = APIRouter()
 @router.get("/{project_id}/metrics")
 def get_project_metrics(
     project_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get project metrics."""
@@ -53,6 +55,7 @@ def get_project_metrics(
 @router.get("/{project_id}/critical-defects")
 def get_critical_defects(
     project_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get critical defects for project (limit 2)."""
@@ -113,6 +116,7 @@ def get_critical_defects(
 @router.get("/{project_id}/recent-actions")
 def get_recent_actions(
     project_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get recent actions for project (limit 3)."""
@@ -153,6 +157,7 @@ def get_recent_actions(
 def get_all_actions(
     project_id: int,
     search: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all actions for project (limit 100) with optional search."""
@@ -273,6 +278,7 @@ def _fix_status_name(display_name: str) -> str:
 def get_project_defects(
     project_id: int,
     search: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get defects for project with search."""

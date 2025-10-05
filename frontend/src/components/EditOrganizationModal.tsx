@@ -100,7 +100,6 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
   };
 
   const handleAddUser = (user: User, role: string) => {
-    // Check if user is already selected (compare as strings)
     const isAlreadySelected = selectedUsers.some((su) => String(su.userId) === String(user.id));
     if (isAlreadySelected) {
       console.log('User already selected:', user.id);
@@ -135,9 +134,11 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
     setError(null);
 
     try {
-      const response = await fetch(`/api/organizations/${organization.id}`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/v1/organizations/${organization.id}`, {
         method: 'PUT',
         headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({

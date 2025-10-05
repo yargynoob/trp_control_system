@@ -79,7 +79,6 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
       if (response.ok) {
         const data = await response.json();
         setPriorities(data);
-        // Set first priority as default if current priority doesn't exist
         if (data.length > 0 && !data.find((p: Priority) => p.name === formData.priority)) {
           setFormData(prev => ({ ...prev, priority: data[0].name }));
         }
@@ -346,7 +345,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId }: Cre
                         variant="ghost"
                         size="sm"
                         onClick={() => handleInputChange('assigneeId', '')}
-                        className="text-[#dc3545] hover:text-[#dc3545] h-6 w-6 p-0">
+                        className="text-[#212529] hover:text-[#dc3545] h-6 w-6 p-0">
 
                           ×
                         </Button>

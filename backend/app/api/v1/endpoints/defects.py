@@ -10,6 +10,7 @@ from app.db import get_db
 from app.models.defect import Defect, DefectStatus, Priority
 from app.models.change_log import ChangeLog
 from app.models.user import User
+from app.core.deps import get_current_user
 from app.schemas.defect import (
     Defect as DefectSchema,
     DefectCreate,
@@ -23,14 +24,20 @@ router = APIRouter()
 
 
 @router.get("/statuses", response_model=List[DefectStatusSchema])
-def get_defect_statuses(db: Session = Depends(get_db)):
+def get_defect_statuses(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Get all defect statuses."""
     statuses = db.query(DefectStatus).order_by(DefectStatus.order_index).all()
     return statuses
 
 
 @router.get("/priorities", response_model=List[PrioritySchema])
-def get_priorities(db: Session = Depends(get_db)):
+def get_priorities(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Get all priorities."""
     priorities = db.query(Priority).order_by(Priority.urgency_level).all()
     return priorities
@@ -44,6 +51,7 @@ def get_defects(
     search: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all defects with filters."""
@@ -94,6 +102,7 @@ def get_defects(
 @router.get("/{defect_id}", response_model=DefectSchema)
 def get_defect(
     defect_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get defect by ID."""
@@ -109,6 +118,7 @@ def get_defect(
 @router.post("/", response_model=DefectSchema, status_code=status.HTTP_201_CREATED)
 def create_defect(
     defect_in: DefectCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Create new defect."""
@@ -156,6 +166,7 @@ def create_defect(
 def update_defect(
     defect_id: int,
     defect_in: DefectUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update defect."""
@@ -169,7 +180,7 @@ def update_defect(
     try:
         update_data = defect_in.model_dump(exclude_unset=True)
         
-        current_user_id = 1
+        current_user_id = current_user.id
         
         for field, new_value in update_data.items():
             old_value = getattr(defect, field)
@@ -208,6 +219,7 @@ def update_defect(
 @router.delete("/{defect_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_defect(
     defect_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete defect."""
@@ -225,7 +237,10 @@ def delete_defect(
 
 
 @router.post("/update-overdue", status_code=status.HTTP_200_OK)
-def update_overdue_defects(db: Session = Depends(get_db)):
+def update_overdue_defects(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Update overdue defects to critical priority."""
     try:
         critical_priority = db.query(Priority).filter(Priority.name == "critical").first()
@@ -242,7 +257,7 @@ def update_overdue_defects(db: Session = Depends(get_db)):
         ).all()
         
         updated_count = 0
-        current_user_id = 1  
+        current_user_id = current_user.id  
         
         for defect in overdue_defects:
             old_priority_id = defect.priority_id

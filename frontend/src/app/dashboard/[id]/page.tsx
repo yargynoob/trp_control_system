@@ -9,6 +9,7 @@ import { CriticalDefects } from '@/components/CriticalDefects';
 import { RecentActions } from '@/components/RecentActions';
 import { EditOrganizationModal } from '@/components/EditOrganizationModal';
 import { MetricCards } from '@/components/MetricCards';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 interface Project {
   id: string;
@@ -33,26 +34,34 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await fetch(`/api/organizations/${params.id}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:8000/api/v1/organizations/${params.id}`, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
+        });
         if (!response.ok) {
           if (response.status === 404) {
             setError('Предприятие не найдено');
+          } else if (response.status === 403) {
+            setError('У вас нет доступа к этому предприятию');
           } else {
-            throw new Error('Failed to fetch organization');
+            setError('Ошибка загрузки данных предприятия');
           }
+          setLoading(false);
           return;
         }
         const data = await response.json();
         setProject(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        console.error('Error fetching project:', err);
+        setError('Не удалось подключиться к серверу');
       } finally {
         setLoading(false);
       }
@@ -63,19 +72,26 @@ export default function DashboardPage() {
 
   const handleEditSuccess = async () => {
     try {
-      const response = await fetch(`/api/organizations/${params.id}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/v1/organizations/${params.id}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setProject(data);
+      } else {
+        console.error('Failed to refresh project:', response.statusText);
       }
-    } catch (err) {
-      console.error('Error refreshing project data:', err);
+    } catch (error) {
+      console.error('Failed to refresh project:', error);
     }
   };
 
   const handleDeleteOrganization = async () => {
     if (!project) return;
-
     setDeleteLoading(true);
     try {
       const response = await fetch(`/api/organizations/${params.id}`, {
@@ -132,8 +148,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
-      <Header />
+    <ProtectedRoute>
+      <main className="min-h-screen bg-white">
+        <Header />
       <Navigation
         activeTab="dashboard"
         projectSelected={!!project}
@@ -227,6 +244,7 @@ export default function DashboardPage() {
           users: project.users || []
         } : null}
       />
-    </main>);
-
+      </main>
+    </ProtectedRoute>
+  );
 }

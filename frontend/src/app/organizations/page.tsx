@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectSelector } from '@/components/ProjectSelector';
 import { Header } from '@/components/Header';
 import { Navigation } from '@/components/Navigation';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 interface Project {
   id: string;
@@ -25,10 +25,12 @@ export default function OrganizationsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white">
-      <Header />
-      <Navigation activeTab="projects" projectSelected={false} />
-      <ProjectSelector onProjectSelect={handleProjectSelect} />
-    </main>);
-
+    <ProtectedRoute>
+      <main className="min-h-screen bg-white">
+        <Header />
+        <Navigation activeTab="projects" projectSelected={false} />
+        <ProjectSelector onProjectSelect={handleProjectSelect} />
+      </main>
+    </ProtectedRoute>
+  );
 }

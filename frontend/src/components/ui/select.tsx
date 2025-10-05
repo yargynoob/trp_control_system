@@ -16,7 +16,7 @@ const Select = React.forwardRef<
       value={value}
       onChange={(e) => onValueChange?.(e.target.value)}
       className={cn(
-        "flex h-10 w-full rounded-md border border-[#ced4da] bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[#6c757d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007bff] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none",
+        "flex h-10 w-full rounded-md border border-[#ced4da] bg-white px-3 py-2 text-sm text-[#212529] ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[#6c757d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007bff] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none",
         className
       )}
       {...props}>
@@ -37,7 +37,7 @@ const SelectTrigger = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-[#ced4da] bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-[#6c757d] focus:outline-none focus:ring-2 focus:ring-[#007bff] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-10 w-full items-center justify-between rounded-md border border-[#ced4da] bg-white px-3 py-2 text-sm text-[#212529] ring-offset-white placeholder:text-[#6c757d] focus:outline-none focus:ring-2 focus:ring-[#007bff] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     {...props}>

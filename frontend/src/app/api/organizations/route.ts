@@ -1,13 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getBackendUrl } from '@/utils/config';
+import { getAuthHeaders } from '@/utils/serverAuth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const response = await fetch(getBackendUrl('organizations'), {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
       cache: 'no-store',
     });
 
@@ -21,21 +20,17 @@ export async function GET() {
   } catch (error) {
     console.error('Backend connection error:', error);
     return NextResponse.json(
-      { error: 'Failed to connect to backend' },
       { status: 503 }
     );
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
     const response = await fetch(getBackendUrl('organizations'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     });
 

@@ -8,7 +8,9 @@ from app.db import get_db
 from app.models.comment import Comment
 from app.models.defect import Defect
 from app.models.change_log import ChangeLog
+from app.models.user import User
 from app.schemas.comment import Comment as CommentSchema, CommentCreate, CommentUpdate
+from app.core.deps import get_current_user
 
 router = APIRouter()
 
@@ -18,6 +20,7 @@ def get_defect_comments(
     defect_id: int,
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all comments for a defect."""
@@ -46,6 +49,7 @@ def get_defect_comments(
 @router.get("/{comment_id}", response_model=CommentSchema)
 def get_comment(
     comment_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get comment by ID."""
@@ -64,6 +68,7 @@ def get_comment(
 @router.post("/", response_model=CommentSchema, status_code=status.HTTP_201_CREATED)
 def create_comment(
     comment_in: CommentCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Create new comment."""
@@ -79,7 +84,6 @@ def create_comment(
         db.add(db_comment)
         db.flush()
         
-        # Create change log
         change_log = ChangeLog(
             defect_id=comment_in.defect_id,
             user_id=comment_in.author_id,
@@ -106,6 +110,7 @@ def create_comment(
 def update_comment(
     comment_id: int,
     comment_in: CommentUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update comment."""
@@ -132,6 +137,7 @@ def update_comment(
 @router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_comment(
     comment_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete comment (soft delete)."""

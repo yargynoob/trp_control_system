@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Navigation } from '@/components/Navigation';
 import { DefectsList } from '@/components/DefectsList';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 interface Project {
   id: string;
@@ -19,19 +20,25 @@ interface Project {
 export default function DefectsPage() {
   const params = useParams();
   const projectId = params.id as string;
-  const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await fetch(`/api/organizations/${projectId}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:8000/api/v1/organizations/${projectId}`, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           setProject(data);
         }
       } catch (error) {
-        console.error('Error fetching project:', error);
+        console.error('Failed to fetch project:', error);
       } finally {
         setLoading(false);
       }
@@ -39,7 +46,6 @@ export default function DefectsPage() {
 
     fetchProject();
   }, [projectId]);
-
   if (loading) {
     return (
       <main className="min-h-screen bg-white">
@@ -53,16 +59,16 @@ export default function DefectsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
-      <Header />
-      <Navigation
-        activeTab="defects"
-        projectSelected={!!project}
-        projectName={project?.name} />
-
-      
-      
-      <DefectsList projectId={projectId} />
-    </main>);
-
+    <ProtectedRoute>
+      <main className="min-h-screen bg-white">
+        <Header />
+        <Navigation
+          activeTab="defects"
+          projectSelected={!!project}
+          projectName={project?.name}
+        />
+        <DefectsList projectId={projectId} />
+      </main>
+    </ProtectedRoute>
+  );
 }

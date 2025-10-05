@@ -9,7 +9,9 @@ from app.db import get_db
 from app.models.project import Project
 from app.models.role import UserRole, Role
 from app.models.defect import Defect
+from app.models.user import User
 from app.schemas.project import Project as ProjectSchema, ProjectCreate, ProjectUpdate, ProjectDetail
+from app.core.deps import get_current_user
 
 router = APIRouter()
 
@@ -18,10 +20,21 @@ router = APIRouter()
 def get_projects(
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all projects with statistics."""
-    projects = db.query(Project).offset(skip).limit(limit).all()
+    """Get all projects with statistics (admin sees all, others see only their projects)."""
+    if current_user.id == 1:
+        projects = db.query(Project).offset(skip).limit(limit).all()
+    else:
+        user_project_ids = db.query(UserRole.project_id).filter(
+            UserRole.user_id == current_user.id
+        ).distinct().all()
+        user_project_ids = [pid[0] for pid in user_project_ids]
+        
+        projects = db.query(Project).filter(
+            Project.id.in_(user_project_ids)
+        ).offset(skip).limit(limit).all()
     
     result = []
     for project in projects:
@@ -50,6 +63,7 @@ def get_projects(
 @router.get("/{project_id}", response_model=ProjectDetail)
 def get_project(
     project_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get project by ID with users."""
@@ -59,6 +73,18 @@ def get_project(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Organization not found"
         )
+    
+    if current_user.id != 1:
+        user_role = db.query(UserRole).filter(
+            UserRole.project_id == project_id,
+            UserRole.user_id == current_user.id
+        ).first()
+        
+        if not user_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this organization"
+            )
     
     user_roles = db.query(UserRole).filter(UserRole.project_id == project_id).all()
     users_data = []
@@ -94,9 +120,16 @@ def get_project(
 @router.post("/", response_model=ProjectSchema, status_code=status.HTTP_201_CREATED)
 def create_project(
     project_in: ProjectCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create new project."""
+    """Create new project (admin only)."""
+    if current_user.id != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can create organizations"
+        )
+    
     try:
         project_data = project_in.model_dump(exclude={"user_roles"})
         project_data["status"] = "active"
@@ -114,14 +147,13 @@ def create_project(
                         user_id=int(user_role.get("userId")),
                         role_id=role.id,
                         project_id=db_project.id,
-                        granted_by=1 
+                        granted_by=current_user.id
                     )
                     db.add(ur)
         
         db.commit()
         db.refresh(db_project)
         
-        # Add statistics for response
         project_response = ProjectSchema.model_validate(db_project)
         project_response.defects_count = 0
         project_response.team_size = len(project_in.user_roles) if project_in.user_roles else 0
@@ -141,6 +173,7 @@ def create_project(
 def update_project(
     project_id: int,
     project_in: ProjectUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update project."""
@@ -166,14 +199,13 @@ def update_project(
                         user_id=int(user_role.get("userId")),
                         role_id=role.id,
                         project_id=project_id,
-                        granted_by=1 
+                        granted_by=current_user.id
                     )
                     db.add(ur)
         
         db.commit()
         db.refresh(project)
         
-        # Add statistics for response
         defects_count = db.query(func.count(Defect.id)).filter(
             Defect.project_id == project_id
         ).scalar()
@@ -204,6 +236,7 @@ def update_project(
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(
     project_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete project."""

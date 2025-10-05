@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getBackendUrl } from '@/utils/config';
+import { getAuthHeaders } from '@/utils/serverAuth';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -10,9 +11,7 @@ export async function GET(
 
     const response = await fetch(getBackendUrl(`organizations/${id}`), {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
       cache: 'no-store',
     });
 
@@ -33,7 +32,7 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -42,9 +41,7 @@ export async function PUT(
 
     const response = await fetch(getBackendUrl(`organizations/${id}`), {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     });
 
@@ -59,13 +56,12 @@ export async function PUT(
     console.error('Backend connection error:', error);
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
-      { status: 503 }
     );
   }
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -73,9 +69,7 @@ export async function DELETE(
 
     const response = await fetch(getBackendUrl(`organizations/${id}`), {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
     });
 
     if (!response.ok) {
