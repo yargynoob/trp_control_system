@@ -36,6 +36,7 @@ class Project(Base):
     
     user_roles = relationship("UserRole", back_populates="project", cascade="all, delete-orphan")
     defects = relationship("Defect", back_populates="project", cascade="all, delete-orphan")
+    reports = relationship("Report", back_populates="project", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Project {self.name}>"

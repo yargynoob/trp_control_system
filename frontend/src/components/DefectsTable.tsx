@@ -444,12 +444,6 @@ const handleSort = (field: keyof Defect) => {
         </div>
 
         <div className="flex space-x-2">
-          {(!userRole || userRole === 'supervisor') && (
-            <Button variant="outline" size="sm">
-              <FileText className="w-4 h-4 mr-2" />
-              Экспорт
-            </Button>
-          )}
           {canEditDefect && userRole !== 'engineer' && (
             <Button
               variant="outline"

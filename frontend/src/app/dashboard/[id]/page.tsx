@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { CriticalDefects } from '@/components/CriticalDefects';
 import { RecentActions } from '@/components/RecentActions';
 import { EditOrganizationModal } from '@/components/EditOrganizationModal';
+import { ExportReportModal } from '@/components/ExportReportModal';
 import { MetricCards } from '@/components/MetricCards';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,11 +39,14 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const canEditOrganization = user?.is_superuser === true 
     ? true 
     : project?.currentUserRole === 'supervisor';
+  
+  const isSupervisor = project?.currentUserRole === 'supervisor';
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -178,15 +182,27 @@ export default function DashboardPage() {
             </h1>
            
           </div>
-          {canEditOrganization && (
-            <Button
-              onClick={() => setIsEditModalOpen(true)}
-              variant="outline"
-              className="text-[#007bff] border-[#007bff] hover:bg-[#007bff] hover:text-white"
-            >
-              Редактировать
-            </Button>
-          )}
+          <div className="flex items-center space-x-3">
+            {isSupervisor && (
+              <>
+                <Button
+                  onClick={() => setIsExportModalOpen(true)}
+                  className="bg-[#28a745] hover:bg-[#218838] text-white"
+                >
+                  Экспорт
+                </Button>
+              </>
+            )}
+            {canEditOrganization && (
+              <Button
+                onClick={() => setIsEditModalOpen(true)}
+                variant="outline"
+                className="text-[#007bff] border-[#007bff] hover:bg-[#007bff] hover:text-white"
+              >
+                Редактировать
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -261,6 +277,20 @@ export default function DashboardPage() {
           users: project.users || []
         } : null}
       />
+      
+      {isSupervisor && (
+        <ExportReportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          onSuccess={() => {
+            setIsExportModalOpen(false);
+            setTimeout(() => {
+              router.push(`/dashboard/${params.id}/reports`);
+            }, 300);
+          }}
+          projectId={params.id as string}
+        />
+      )}
       </main>
     </ProtectedRoute>
   );

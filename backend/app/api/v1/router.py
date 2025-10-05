@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import users, projects, defects, comments, files, dashboard, auth
+from app.api.v1.endpoints import users, projects, defects, comments, files, dashboard, auth, reports
 
 api_router = APIRouter()
 
@@ -14,3 +14,4 @@ api_router.include_router(defects.router, prefix="/defects", tags=["defects"])
 api_router.include_router(comments.router, prefix="/comments", tags=["comments"])
 api_router.include_router(files.router, prefix="/files", tags=["files"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(reports.router, prefix="/reports", tags=["reports"])

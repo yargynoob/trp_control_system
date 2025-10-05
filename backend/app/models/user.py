@@ -25,6 +25,7 @@ class User(Base):
     comments = relationship("Comment", back_populates="author")
     change_logs = relationship("ChangeLog", back_populates="user")
     file_attachments = relationship("FileAttachment", back_populates="uploader")
+    reports = relationship("Report", back_populates="creator")
     sent_notifications = relationship("Notification", foreign_keys="Notification.sender_id", back_populates="sender")
     received_notifications = relationship("Notification", foreign_keys="Notification.recipient_id", back_populates="recipient")
     
