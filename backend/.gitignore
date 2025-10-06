@@ -47,14 +47,6 @@ uploads/
 *.db
 *.sqlite3
 
-# Backups
-backups/
-*.sql
-
-# Alembic
-alembic/versions/*.py
-!alembic/versions/.gitkeep
-
 # Tests
 .pytest_cache/
 .coverage

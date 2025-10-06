@@ -13,7 +13,7 @@
 > [![FastAPI](https://img.shields.io/badge/FastAPI-009485.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 > [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-%23D71F00.svg?logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 > [![Postgres](https://img.shields.io/badge/Postgres-%23316192.svg?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-> [![Redis](https://img.shields.io/badge/Redis-%23DD0031.svg?logo=redis&logoColor=white)](https://redis.io/)
+> [![Alembic](https://img.shields.io/badge/Alembic-blue)](https://alembic.sqlalchemy.org/)
 > <br/>Infrastructure: 
 > [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff)](https://www.docker.com/)
 > [![Nginx](https://img.shields.io/badge/Nginx-%23009639.svg?logo=nginx&logoColor=white)](https://nginx.org/)
@@ -49,7 +49,6 @@ architecture-beta
 service internet(internet)[Internet]
 service proxy(internet)[Nginx]
 service db(database)[PostgreSQL]
-service redis(database)[Redis]
 service backendServer(server)[Backend FastAPI]
 service frontendServer(server)[Frontend NextJS]
 
@@ -57,7 +56,6 @@ internet:R <--> L:proxy
 proxy:R <--> L:backendServer
 proxy:R <--> L:frontendServer
 backendServer:R <--> L:db
-backendServer:R <--> L:redis
 ```
 
 ## Архитектура базы данных
@@ -80,26 +78,106 @@ TRP_Clean/
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL 15+
-- Redis 6+
-- Docker & Docker Compose
+- Docker & Docker Compose (для запуска через Docker)
 
 ## Установка и запуск
 
-### Разработка
+### 🐳 Docker (Рекомендуется)
 
-1. Клонировать репозиторий
-2. Скопировать и настроить переменные окружения из `.env.example`
-3. Запустить через Docker Compose:
+**Самый быстрый способ запуска - всего 2 минуты!**
 
+```bash
+# 1. Клонируйте репозиторий
+git clone <repository-url>
+cd TRP_Clean
+
+# 2. Создайте .env файл
+cp .env.example .env
+# Отредактируйте .env - установите пароли
+
+# 3. Запустите автоматическую установку
+# Windows:
+docker-setup.bat
+
+# Linux/Mac:
+chmod +x docker-setup.sh
+./docker-setup.sh
+```
+
+**Готово!** Откройте http://localhost  
+Логин: admin / admin123
+
+**Подробная документация:** [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md)
+
+---
+
+### 💻 Ручная установка (без Docker)
+
+Если вы хотите запустить проект без Docker, см. подробные инструкции в [DATABASE_SETUP.md](./DATABASE_SETUP.md).
+
+**Быстрый старт (5 минут):**
+
+```bash
+# 1. Создайте базу данных
+psql -U postgres -c "CREATE DATABASE \"TRP\" WITH ENCODING 'UTF8';"
+
+# 2. Клонируйте репозиторий
+git clone <repository-url>
+cd TRP_Clean/backend
+
+# 3. Настройте переменные окружения
+cp .env.example .env
+# Отредактируйте .env
+
+# 4. Установите зависимости
+pip install -r requirements.txt
+
+# 5. Примените миграции
+python -m alembic upgrade head
+
+# 6. Инициализируйте базовые данные
+python init_db.py
+
+# 7. Запустите backend
+uvicorn app.main:app --reload
+```
+
+Backend: http://localhost:8000  
+API Docs: http://localhost:8000/docs  
+Логин: admin / admin123
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend: http://localhost:3000
+
+---
+
+### 🔧 Разработка
+
+**Docker (с hot reload):**
 ```bash
 docker-compose -f docker-compose.dev.yml up
 ```
 
-### Продакшн
-
+**Без Docker:**
 ```bash
-docker-compose up -d
+# Terminal 1 - Backend
+cd backend
+uvicorn app.main:app --reload
+
+# Terminal 2 - Frontend  
+cd frontend
+npm run dev
 ```
+
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
+- PostgreSQL: localhost:5169
 
 ## Страницы
 1. **Страница авторизации**
@@ -116,3 +194,53 @@ docker-compose up -d
 ## API
 
 API документация доступна по адресу: `http://localhost:8000/docs`
+
+## Документация
+
+- **[Docker Deployment](./DOCKER_DEPLOYMENT.md)** - полная инструкция по развертыванию с Docker (рекомендуется)
+- [Настройка базы данных](./DATABASE_SETUP.md) - подробная инструкция по развертыванию БД без Docker
+- [ER-диаграмма базы данных](./ER_диаграмма_базы_данных.md) - структура базы данных
+
+## Управление проектом
+
+### Команды Docker
+
+```bash
+# Запуск
+docker-compose up -d
+
+# Просмотр логов
+docker-compose logs -f
+
+# Остановка
+docker-compose down
+
+# Перезапуск
+docker-compose restart
+
+# Просмотр статуса
+docker-compose ps
+```
+
+### Миграции базы данных
+
+```bash
+# С Docker
+docker-compose exec backend python -m alembic upgrade head
+docker-compose exec backend python -m alembic revision --autogenerate -m "description"
+
+# Без Docker
+cd backend
+python -m alembic upgrade head
+python -m alembic revision --autogenerate -m "description"
+```
+
+### Резервное копирование
+
+```bash
+# Backup базы данных
+docker-compose exec db pg_dump -U postgres TRP > backup.sql
+
+# Restore базы данных
+docker-compose exec -T db psql -U postgres TRP < backup.sql
+```

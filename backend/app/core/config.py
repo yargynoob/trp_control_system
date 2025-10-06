@@ -30,9 +30,6 @@ class Settings(BaseSettings):
             return v
         return f"postgresql://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_HOST')}:{values.get('POSTGRES_PORT')}/{values.get('POSTGRES_DB')}"
     
-    # Redis
-    REDIS_URL: str = "redis://localhost:6379"
-    
     # Security
     SECRET_KEY: str = "your-secret-key-change-this-in-production"
     ALGORITHM: str = "HS256"
@@ -59,11 +56,8 @@ class Settings(BaseSettings):
     SMTP_USERNAME: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     
-    # Sentry (optional)
-    SENTRY_DSN: Optional[str] = None
-    
     # PostgreSQL Tools Path (for backups)
-    PG_BIN_PATH: Optional[str] = None  # Path to PostgreSQL bin directory (e.g., "C:\Program Files\PostgreSQL\17\bin")
+    PG_BIN_PATH: Optional[str] = None
     
     class Config:
         """Pydantic config."""

@@ -35,6 +35,5 @@ black>=23.0.0
 flake8>=6.0.0
 mypy>=1.5.0
 
-# Monitoring & Logging
-sentry-sdk[fastapi]>=1.32.0
+# Logging
 structlog>=23.0.0

@@ -3,60 +3,62 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
+    container_name: trp_db_dev
     environment:
-      POSTGRES_USER: defect_user
-      POSTGRES_PASSWORD: defect_password
-      POSTGRES_DB: defect_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: TRP
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_dev:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5169:5432"
     networks:
-      - defect_network
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    networks:
-      - defect_network
+      - trp_network_dev
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
+    container_name: trp_backend_dev
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://defect_user:defect_password@db:5432/defect_management
-      - REDIS_URL=redis://redis:6379
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: TRP
+      SECRET_KEY: dev-secret-key
+      DEBUG: "True"
+      ENVIRONMENT: development
     depends_on:
       - db
-      - redis
     networks:
-      - defect_network
+      - trp_network_dev
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
+    container_name: trp_frontend_dev
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/.next
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
       - backend
     networks:
-      - defect_network
+      - trp_network_dev
 
 volumes:
-  postgres_data:
+  postgres_data_dev:
 
 networks:
-  defect_network:
+  trp_network_dev:
     driver: bridge
