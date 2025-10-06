@@ -51,31 +51,41 @@ def init_defect_statuses(db: Session) -> None:
         {
             "name": "open",
             "display_name": "Новый",
-            "color": "#dc3545",
+            "color_code": "#dc3545",
+            "order_index": 1,
+            "is_initial": True,
             "is_final": False
         },
         {
             "name": "in_progress",
             "display_name": "В работе",
-            "color": "#ffc107",
+            "color_code": "#ffc107",
+            "order_index": 2,
+            "is_initial": False,
             "is_final": False
         },
         {
             "name": "resolved",
             "display_name": "Решен",
-            "color": "#28a745",
+            "color_code": "#28a745",
+            "order_index": 3,
+            "is_initial": False,
             "is_final": False
         },
         {
             "name": "closed",
             "display_name": "Закрыт",
-            "color": "#6c757d",
+            "color_code": "#6c757d",
+            "order_index": 4,
+            "is_initial": False,
             "is_final": True
         },
         {
             "name": "rejected",
             "display_name": "Отменен",
-            "color": "#6c757d",
+            "color_code": "#6c757d",
+            "order_index": 5,
+            "is_initial": False,
             "is_final": True
         }
     ]
@@ -100,26 +110,26 @@ def init_priorities(db: Session) -> None:
         {
             "name": "low",
             "display_name": "Низкий",
-            "color": "#28a745",
-            "level": 1
+            "color_code": "#28a745",
+            "urgency_level": 1
         },
         {
             "name": "medium",
             "display_name": "Средний",
-            "color": "#ffc107",
-            "level": 2
+            "color_code": "#ffc107",
+            "urgency_level": 2
         },
         {
             "name": "high",
             "display_name": "Высокий",
-            "color": "#fd7e14",
-            "level": 3
+            "color_code": "#fd7e14",
+            "urgency_level": 3
         },
         {
             "name": "critical",
             "display_name": "Критический",
-            "color": "#dc3545",
-            "level": 4
+            "color_code": "#dc3545",
+            "urgency_level": 4
         }
     ]
     
