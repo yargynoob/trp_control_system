@@ -141,7 +141,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/v1/organizations/${organization.id}`, {
+      const response = await fetch(`/api/v1/organizations/${organization.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
@@ -195,7 +195,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
           }
 
           <div className="space-y-6">
-            <div className="space-y-4">              
+            <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name" className="text-sm font-medium text-[#212529]">
@@ -243,7 +243,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
                 <h3 className="text-[16px] font-semibold text-[#212529] border-b border-[#dee2e6] pb-2">
                   ДОБАВИТЬ СОТРУДНИКОВ
                 </h3>
-                
+
                 <div>
                   <Label htmlFor="userSearch" className="text-sm font-medium text-[#212529]">
                     Поиск сотрудников
@@ -291,7 +291,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
                 <h3 className="text-[16px] font-semibold text-[#212529] border-b border-[#dee2e6] pb-2">
                   НАЗНАЧЕННЫЕ СОТРУДНИКИ
                 </h3>
-                
+
                 {selectedUsers.length === 0 ?
                   <div className="p-4 text-center text-[#6c757d] border border-[#dee2e6] rounded-md">
                     Пока никто не назначен
@@ -332,7 +332,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
               </div>
             </div>
           </div>
-        </div>  
+        </div>
 
         <div className="text-[#212529] flex justify-end space-x-3 p-6 border-t border-[#dee2e6]">
           <Button variant="outline" onClick={handleClose} disabled={loading}>

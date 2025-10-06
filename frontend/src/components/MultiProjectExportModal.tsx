@@ -41,7 +41,7 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
     try {
       setLoadingProjects(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/v1/users/me/supervisor-projects', {
+      const response = await fetch('/api/v1/users/me/supervisor-projects', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
             <Label className="text-sm font-medium text-[#212529] mb-2 block">
               Выберите проекты <span className="text-red-500">*</span>
             </Label>
-            
+
             {loadingProjects ? (
               <div className="p-4 text-center text-[#6c757d]">
                 Загрузка проектов...
@@ -208,7 +208,7 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
                     Выбрать все ({projects.length})
                   </label>
                 </div>
-                
+
                 {projects.map((project) => (
                   <div key={project.id} className="flex items-start space-x-2">
                     <Checkbox
@@ -234,7 +234,7 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
                 ))}
               </div>
             )}
-            
+
             {selectedProjects.length > 0 && (
               <div className="mt-2 text-sm text-[#6c757d]">
                 Выбрано проектов: {selectedProjects.length} из {projects.length}
@@ -284,8 +284,8 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
         </div>
 
         <div className="flex justify-end space-x-3 pt-4 border-t border-[#dee2e6] text-[#212529]">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleClose}
             disabled={loading}
           >

@@ -14,6 +14,10 @@ RUN npm ci --only=production
 # Copy source code
 COPY . .
 
+# Set API URL for production build
+ARG NEXT_PUBLIC_BACKEND_URL=""
+ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+
 # Build application
 RUN npm run build
 

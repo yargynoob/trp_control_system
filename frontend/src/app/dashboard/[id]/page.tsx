@@ -52,7 +52,7 @@ export default function DashboardPage() {
     const fetchProject = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/v1/organizations/${params.id}`, {
+        const response = await fetch(`/api/v1/organizations/${params.id}`, {
           headers: {
             'Authorization': token ? `Bearer ${token}` : '',
             'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export default function DashboardPage() {
   const handleEditSuccess = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/v1/organizations/${params.id}`, {
+      const response = await fetch(`/api/v1/organizations/${params.id}`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json',

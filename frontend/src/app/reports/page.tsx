@@ -39,7 +39,7 @@ export default function AllReportsPage() {
     try {
       const token = localStorage.getItem('token');
       
-      const supervisorResponse = await fetch('http://localhost:8000/api/v1/users/me/supervisor-projects', {
+      const supervisorResponse = await fetch('/api/v1/users/me/supervisor-projects', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export default function AllReportsPage() {
         const projects = await supervisorResponse.json();
         const isSup = projects.length > 0;
         setIsSupervisor(isSup);
-        
+
         if (isSup) {
           await fetchReports();
         } else {
@@ -96,23 +96,23 @@ export default function AllReportsPage() {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/backend/reports/${reportId}/download?token=${token}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to download report');
       }
-      
+
       const contentDisposition = response.headers.get('content-disposition');
       let filename = 'report';
-      
+
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
+        const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) ||
                              contentDisposition.match(/filename=([^;]+)/);
-        
+
         if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1].trim();
         }
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -166,7 +166,7 @@ export default function AllReportsPage() {
           projectSelected={false}
           isSupervisorAnywhere={isSupervisor}
         />
-        
+
         <div className="bg-[#f8f9fa] min-h-screen">
           <div className="container px-6 py-6">
             <div className="mb-6 flex items-center justify-between">

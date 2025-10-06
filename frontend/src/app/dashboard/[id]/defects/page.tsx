@@ -36,7 +36,7 @@ export default function DefectsPage() {
     const fetchProject = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/v1/organizations/${projectId}`, {
+        const response = await fetch(`/api/v1/organizations/${projectId}`, {
           headers: {
             'Authorization': token ? `Bearer ${token}` : '',
             'Content-Type': 'application/json',
