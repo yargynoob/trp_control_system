@@ -176,14 +176,6 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
               <p className="text-sm text-red-600">{error}</p>
             </div>
           }
-          
-          {!isSuperuser && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm text-blue-700 font-medium">
-                ℹ️ Вы будете автоматически назначены руководителем этой организации
-              </p>
-            </div>
-          )}
 
           <div className="space-y-6">
             <div className="space-y-4">

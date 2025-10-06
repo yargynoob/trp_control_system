@@ -156,7 +156,7 @@ export function ProjectSelector({ onProjectSelect, isSupervisor = false, onExpor
               onClick={onExportClick}
               className="bg-[#28a745] hover:bg-[#218838] text-white"
             >
-              Экспорт мультипроектного отчета
+              Экспорт общего отчета
             </Button>
           )}
           <Button

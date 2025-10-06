@@ -77,7 +77,7 @@ export function ExportReportModal({ isOpen, onClose, onSuccess, projectId }: Exp
       <DialogContent className="w-[500px] max-w-none px-6 py-4">
         <DialogHeader>
           <DialogTitle className="text-[20px] font-semibold text-[#212529]">
-            Экспорт отчета
+            ЭКСПОРТ ОТЧЕТА
           </DialogTitle>
         </DialogHeader>
 
@@ -148,14 +148,9 @@ export function ExportReportModal({ isOpen, onClose, onSuccess, projectId }: Exp
             </div>
           </div>
 
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm text-blue-700">
-              ℹ️ Отчет будет содержать все дефекты проекта с текущими данными
-            </p>
-          </div>
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4 border-t border-[#dee2e6]">
+        <div className="text-[#212529] flex justify-end space-x-3 pt-4 border-t border-[#dee2e6]">
           <Button 
             variant="outline" 
             onClick={handleClose}

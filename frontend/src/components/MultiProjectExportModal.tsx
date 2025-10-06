@@ -142,11 +142,11 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
       <DialogContent className="w-[600px] max-w-none px-6 py-4">
         <DialogHeader>
           <DialogTitle className="text-[20px] font-semibold text-[#212529]">
-            Экспорт мультипроектного отчета
+            ЭКСПОРТ ОБЩЕГО ОТЧЕТА
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4 max-h-[600px] overflow-y-auto">
+        <div className="space-y-4 py-4 max-h-[600px] overflow-y-auto scrollbar-hide">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-md">
               <p className="text-sm text-red-600">{error}</p>
@@ -283,7 +283,7 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4 border-t border-[#dee2e6]">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-[#dee2e6] text-[#212529]">
           <Button 
             variant="outline" 
             onClick={handleClose}

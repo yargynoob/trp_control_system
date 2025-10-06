@@ -172,17 +172,7 @@ export function FilterSidebar({
               </label>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="status-cancelled"
-                checked={filters.status.cancelled}
-                onCheckedChange={(checked) => handleStatusChange('cancelled', checked as boolean)}
-                className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
-              />
-              <label htmlFor="status-cancelled" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
-                Отменен
-              </label>
-            </div>
+            
           </div>
         </div>
 

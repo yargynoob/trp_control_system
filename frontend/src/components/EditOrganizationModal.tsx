@@ -271,7 +271,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
                         </div>
                         <div className="text-xs text-[#6c757d]">{user.email}</div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="text-[#212529] flex items-center space-x-2">
                         <Button
                           size="sm"
                           variant="outline"
@@ -334,7 +334,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
           </div>
         </div>  
 
-        <div className="flex justify-end space-x-3 p-6 border-t border-[#dee2e6]">
+        <div className="text-[#212529] flex justify-end space-x-3 p-6 border-t border-[#dee2e6]">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             Отмена
           </Button>

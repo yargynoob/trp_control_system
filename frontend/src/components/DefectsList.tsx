@@ -147,7 +147,7 @@ export function DefectsList({ projectId, canCreateDefect = true, userRole }: Def
             <Button
               onClick={() => setShowFilters(!showFilters)}
               variant="outline"
-              className="px-3 md:px-4 py-1.5 md:py-2.5 text-xs md:text-sm"
+              className="text-[#212529] px-3 md:px-4 py-1.5 md:py-2.5 text-xs md:text-sm"
             >
               {showFilters ? 'Скрыть фильтры' : 'Показать фильтры'}
             </Button>

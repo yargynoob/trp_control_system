@@ -204,7 +204,7 @@ export default function ReportsPage() {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-[#212529] flex-1">
+                      <h3 className="font-medium text-[#212529] flex-1 mt-3">
                         {report.title}
                       </h3>
                       <span className="text-xs px-2 py-1 bg-[#007bff] text-white rounded">
@@ -227,13 +227,13 @@ export default function ReportsPage() {
                 <>
                 <Card>
                   <CardHeader className="border-b border-[#dee2e6]">
-                    <CardTitle className="text-[20px]">
+                    <CardTitle className="text-[#212529] text-[20px]">
                       Информация об отчете
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
                     <div>
-                      <h3 className="text-sm font-medium text-[#6c757d] mb-1">
+                      <h3 className="text-sm font-medium text-[#6c757d] mt-2">
                         Название
                       </h3>
                       <p className="text-[16px] text-[#212529]">

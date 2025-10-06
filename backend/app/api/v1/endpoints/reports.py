@@ -283,10 +283,24 @@ def download_report(
             detail="Report not found"
         )
     
-    is_supervisor = user_has_role_in_project(current_user.id, report.project_id, ['supervisor'], db)
-    is_manager = user_has_role_in_project(current_user.id, report.project_id, ['manager'], db)
+    # Check access rights based on report type
+    has_access = False
     
-    if not (is_supervisor or is_manager):
+    if report.project_ids:
+        # Multi-project report - check if user has access to at least one project
+        for proj_id in report.project_ids:
+            is_supervisor = user_has_role_in_project(current_user.id, proj_id, ['supervisor'], db)
+            is_manager = user_has_role_in_project(current_user.id, proj_id, ['manager'], db)
+            if is_supervisor or is_manager:
+                has_access = True
+                break
+    elif report.project_id:
+        # Single project report
+        is_supervisor = user_has_role_in_project(current_user.id, report.project_id, ['supervisor'], db)
+        is_manager = user_has_role_in_project(current_user.id, report.project_id, ['manager'], db)
+        has_access = is_supervisor or is_manager
+    
+    if not has_access:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only supervisors and managers can download reports"
