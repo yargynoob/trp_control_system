@@ -39,7 +39,7 @@ export default function AllReportsPage() {
     try {
       const token = localStorage.getItem('token');
       
-      const supervisorResponse = await fetch('/api/v1/users/me/supervisor-projects', {
+      const supervisorResponse = await fetch('/api/users/me/supervisor-projects', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

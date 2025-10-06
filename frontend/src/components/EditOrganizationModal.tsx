@@ -141,7 +141,7 @@ export function EditOrganizationModal({ isOpen, onClose, onSuccess, organization
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/v1/organizations/${organization.id}`, {
+      const response = await fetch(`/api/organizations/${organization.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',

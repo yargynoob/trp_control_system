@@ -57,7 +57,7 @@ export function ProjectSelector({ onProjectSelect, isSupervisor = false, onExpor
         return;
       }
       
-      const response = await fetch('/api/v1/organizations/', {
+      const response = await fetch('/api/organizations/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

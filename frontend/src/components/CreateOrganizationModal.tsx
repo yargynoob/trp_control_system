@@ -127,7 +127,7 @@ export function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOr
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/organizations/', {
+      const response = await fetch('/api/organizations/', {
         method: 'POST',
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',

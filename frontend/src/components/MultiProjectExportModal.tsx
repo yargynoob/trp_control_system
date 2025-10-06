@@ -41,7 +41,7 @@ export function MultiProjectExportModal({ isOpen, onClose, onSuccess }: MultiPro
     try {
       setLoadingProjects(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/users/me/supervisor-projects', {
+      const response = await fetch('/api/users/me/supervisor-projects', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

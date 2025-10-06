@@ -70,7 +70,7 @@ export default function ReportsPage() {
   const fetchProjectInfo = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/v1/organizations/${projectId}`, {
+      const response = await fetch(`/api/organizations/${projectId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

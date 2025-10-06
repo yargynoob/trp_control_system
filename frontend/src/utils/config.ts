@@ -1,6 +1,6 @@
 export const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '';
 
-export const API_VERSION = '/api/v1';
+export const API_VERSION = '/api';
 
 export const BACKEND_API_URL = `${BACKEND_URL}${API_VERSION}`;
 
