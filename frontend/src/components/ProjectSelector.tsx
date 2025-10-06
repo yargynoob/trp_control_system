@@ -20,6 +20,8 @@ interface Project {
 
 interface ProjectSelectorProps {
   onProjectSelect: (project: Project) => void;
+  isSupervisor?: boolean;
+  onExportClick?: () => void;
 }
 
 const statusColors = {
@@ -34,7 +36,7 @@ const statusLabels = {
   completed: "Завершен"
 };
 
-export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
+export function ProjectSelector({ onProjectSelect, isSupervisor = false, onExportClick }: ProjectSelectorProps) {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -63,7 +65,6 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
       });
       
       if (!response.ok) {
-        // Если 401 - пользователь не авторизован, редирект на логин
         if (response.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -75,7 +76,6 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
       
       const data = await response.json();
       
-      // Map snake_case from backend to camelCase for frontend
       const mappedProjects = data.map((project: any) => ({
         id: String(project.id),
         name: project.name,
@@ -119,7 +119,7 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
   }
 
   return (
-    <div className="p-3 md:p-6">
+    <div>
       <div className="mb-6">
         <h1 className="text-[24px] font-bold text-[#212529] mb-2">
           Выбор предприятия
@@ -150,12 +150,22 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
             className="border-[#dee2e6] focus:border-[#007bff] focus:ring-[#007bff] text-[#212529]"
           />
         </div>
-        <Button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="bg-[#007bff] hover:bg-[#0056b3] text-white"
-        >
-          + Добавить организацию
-        </Button>
+        <div className="flex gap-2">
+          {isSupervisor && onExportClick && (
+            <Button
+              onClick={onExportClick}
+              className="bg-[#28a745] hover:bg-[#218838] text-white"
+            >
+              Экспорт мультипроектного отчета
+            </Button>
+          )}
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-[#007bff] hover:bg-[#0056b3] text-white"
+          >
+            + Добавить организацию
+          </Button>
+        </div>
       </div>
 
       {projects.length === 0 && !error ? (
@@ -258,5 +268,4 @@ export function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
         onSuccess={handleCreateSuccess} />
 
     </div>);
-
 }

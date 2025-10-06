@@ -138,3 +138,32 @@ def delete_user(
     db.commit()
     
     return None
+
+
+@router.get("/me/supervisor-projects")
+def get_user_supervisor_projects(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all projects where current user is a supervisor."""
+    from app.models.role import UserRole, Role
+    from app.models.project import Project
+    
+    projects = db.query(Project).join(
+        UserRole, Project.id == UserRole.project_id
+    ).join(
+        Role, UserRole.role_id == Role.id
+    ).filter(
+        UserRole.user_id == current_user.id,
+        Role.name == "supervisor"
+    ).all()
+    
+    return [
+        {
+            "id": p.id,
+            "name": p.name,
+            "description": p.description,
+            "address": p.address
+        }
+        for p in projects
+    ]

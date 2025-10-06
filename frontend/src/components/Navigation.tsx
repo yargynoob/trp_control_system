@@ -7,9 +7,10 @@ interface NavigationProps {
   projectSelected?: boolean;
   projectName?: string;
   userRole?: string;
+  isSupervisorAnywhere?: boolean;
 }
 
-export function Navigation({ activeTab, projectSelected = false, projectName, userRole }: NavigationProps) {
+export function Navigation({ activeTab, projectSelected = false, projectName, userRole, isSupervisorAnywhere = false }: NavigationProps) {
   const router = useRouter();
   const params = useParams();
   const projectId = params?.id as string;
@@ -18,10 +19,21 @@ export function Navigation({ activeTab, projectSelected = false, projectName, us
     { id: 'projects', label: 'Проекты', path: '/organizations' },
     { id: 'dashboard', label: 'Дашборд', path: `/dashboard/${projectId}`, requiresProject: true },
     { id: 'defects', label: 'Дефекты', path: `/dashboard/${projectId}/defects`, requiresProject: true },
-    { id: 'reports', label: 'Отчеты', path: `/dashboard/${projectId}/reports`, requiresProject: true, hideForRoles: ['manager', 'engineer'] }
+    { 
+      id: 'reports', 
+      label: 'Отчеты', 
+      path: projectSelected ? `/dashboard/${projectId}/reports` : '/reports',
+      requiresProject: false, 
+      requiresSupervisor: true, 
+      hideForRoles: ['manager', 'engineer'] 
+    }
   ];
   
   const visibleTabs = tabs.filter(tab => {
+    if (tab.id === 'reports' && !projectSelected) {
+      return isSupervisorAnywhere;
+    }
+    
     if (tab.requiresProject && !projectSelected) {
       return false;
     }
