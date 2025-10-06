@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     # Sentry (optional)
     SENTRY_DSN: Optional[str] = None
     
+    # PostgreSQL Tools Path (for backups)
+    PG_BIN_PATH: Optional[str] = None  # Path to PostgreSQL bin directory (e.g., "C:\Program Files\PostgreSQL\17\bin")
+    
     class Config:
         """Pydantic config."""
         env_file = ".env"
