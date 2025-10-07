@@ -122,7 +122,7 @@ def get_critical_defects(
         DefectStatus, Defect.status_id == DefectStatus.id
     ).filter(
         Defect.project_id == project_id,
-        DefectStatus.name.in_(['new', 'in_progress']),
+        DefectStatus.name.in_(['open', 'in_progress']),
         or_(
             Defect.priority_id == critical_priority.id if critical_priority else False,
             Defect.due_date < date.today()

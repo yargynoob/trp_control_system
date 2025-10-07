@@ -134,7 +134,7 @@ export default function LoginPage() {
 
         <div className="text-center mt-6">
           <p className="text-[14px] text-[#6c757d]">
-            © 2024 Система управления дефектами
+            © 2025 Система управления дефектами
           </p>
         </div>
       </div>

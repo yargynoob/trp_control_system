@@ -362,7 +362,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId, userR
                     }
                     
                     {formData.assigneeId ?
-                    <div className="p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md flex items-center justify-between">
+                    <div className="text-[#212529] p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md flex items-center justify-between">
                         <span className="text-sm">
                           {(() => {
                             const user = users.find((u) => u.id === formData.assigneeId);
