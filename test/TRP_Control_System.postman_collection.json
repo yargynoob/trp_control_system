@@ -1,0 +1,106 @@
+{
+	"info": {
+		"_postman_id": "trp-control-2025",
+		"name": "TRP Control System API",
+		"description": "API collection for TRP Control System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{"key": "baseUrl", "value": "http://localhost:8000"},
+		{"key": "token", "value": ""},
+		{"key": "project_id", "value": "1"},
+		{"key": "defect_id", "value": "1"},
+		{"key": "user_id", "value": "1"}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [{"key": "token", "value": "{{token}}"}]
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{"name": "Register", "request": {"auth": {"type": "noauth"}, "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"username\":\"test\",\"email\":\"test@test.com\",\"password\":\"pass123\",\"first_name\":\"Test\",\"last_name\":\"User\"}"}, "url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"]}}},
+				{"name": "Login", "request": {"auth": {"type": "noauth"}, "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"username\":\"test\",\"password\":\"pass123\"}"}, "url": {"raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"]}}},
+				{"name": "Get Current User", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api","auth","me"]}}},
+				{"name": "Refresh Token", "request": {"method": "POST", "url": {"raw": "{{baseUrl}}/api/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api","auth","refresh"]}}},
+				{"name": "Logout", "request": {"method": "POST", "url": {"raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api","auth","logout"]}}}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{"name": "Get All Users", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/users?skip=0&limit=100", "host": ["{{baseUrl}}"], "path": ["api","users"], "query": [{"key": "skip", "value": "0"}, {"key": "limit", "value": "100"}]}}},
+				{"name": "Get User by ID", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/users/{{user_id}}", "host": ["{{baseUrl}}"], "path": ["api","users","{{user_id}}"]}}},
+				{"name": "Create User", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"username\":\"new\",\"email\":\"new@test.com\",\"password\":\"pass\",\"first_name\":\"New\",\"last_name\":\"User\"}"}, "url": {"raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api","users"]}}},
+				{"name": "Update User", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"first_name\":\"Updated\"}"}, "url": {"raw": "{{baseUrl}}/api/users/{{user_id}}", "host": ["{{baseUrl}}"], "path": ["api","users","{{user_id}}"]}}},
+				{"name": "Delete User", "request": {"method": "DELETE", "url": {"raw": "{{baseUrl}}/api/users/{{user_id}}", "host": ["{{baseUrl}}"], "path": ["api","users","{{user_id}}"]}}},
+				{"name": "Get Supervisor Projects", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/users/me/supervisor-projects", "host": ["{{baseUrl}}"], "path": ["api","users","me","supervisor-projects"]}}}
+			]
+		},
+		{
+			"name": "Organizations",
+			"item": [
+				{"name": "Get All", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/organizations", "host": ["{{baseUrl}}"], "path": ["api","organizations"]}}},
+				{"name": "Get by ID", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/organizations/{{project_id}}", "host": ["{{baseUrl}}"], "path": ["api","organizations","{{project_id}}"]}}},
+				{"name": "Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Project\",\"description\":\"Desc\",\"address\":\"Addr\"}"}, "url": {"raw": "{{baseUrl}}/api/organizations", "host": ["{{baseUrl}}"], "path": ["api","organizations"]}}},
+				{"name": "Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Updated\"}"}, "url": {"raw": "{{baseUrl}}/api/organizations/{{project_id}}", "host": ["{{baseUrl}}"], "path": ["api","organizations","{{project_id}}"]}}},
+				{"name": "Delete", "request": {"method": "DELETE", "url": {"raw": "{{baseUrl}}/api/organizations/{{project_id}}", "host": ["{{baseUrl}}"], "path": ["api","organizations","{{project_id}}"]}}}
+			]
+		},
+		{
+			"name": "Defects",
+			"item": [
+				{"name": "Get Statuses", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/defects/statuses", "host": ["{{baseUrl}}"], "path": ["api","defects","statuses"]}}},
+				{"name": "Get Priorities", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/defects/priorities", "host": ["{{baseUrl}}"], "path": ["api","defects","priorities"]}}},
+				{"name": "Get All", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/defects?project_id={{project_id}}", "host": ["{{baseUrl}}"], "path": ["api","defects"], "query": [{"key": "project_id", "value": "{{project_id}}"}]}}},
+				{"name": "Get by ID", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/defects/{{defect_id}}", "host": ["{{baseUrl}}"], "path": ["api","defects","{{defect_id}}"]}}},
+				{"name": "Create", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"project_id\":1,\"title\":\"Defect\",\"description\":\"Desc\",\"location\":\"Room\",\"priority_id\":2,\"reporter_id\":1,\"due_date\":\"2025-12-31\"}"}, "url": {"raw": "{{baseUrl}}/api/defects", "host": ["{{baseUrl}}"], "path": ["api","defects"]}}},
+				{"name": "Update", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"title\":\"Updated\",\"status\":\"in_progress\"}"}, "url": {"raw": "{{baseUrl}}/api/defects/{{defect_id}}", "host": ["{{baseUrl}}"], "path": ["api","defects","{{defect_id}}"]}}},
+				{"name": "Delete", "request": {"method": "DELETE", "url": {"raw": "{{baseUrl}}/api/defects/{{defect_id}}", "host": ["{{baseUrl}}"], "path": ["api","defects","{{defect_id}}"]}}},
+				{"name": "Update Overdue", "request": {"method": "POST", "url": {"raw": "{{baseUrl}}/api/defects/update-overdue", "host": ["{{baseUrl}}"], "path": ["api","defects","update-overdue"]}}},
+				{"name": "Create Comment", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"content\":\"Comment text\"}"}, "url": {"raw": "{{baseUrl}}/api/defects/{{defect_id}}/comments", "host": ["{{baseUrl}}"], "path": ["api","defects","{{defect_id}}","comments"]}}},
+				{"name": "Get Comments", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/defects/{{defect_id}}/comments", "host": ["{{baseUrl}}"], "path": ["api","defects","{{defect_id}}","comments"]}}},
+				{"name": "Delete Comment", "request": {"method": "DELETE", "url": {"raw": "{{baseUrl}}/api/defects/{{defect_id}}/comments/1", "host": ["{{baseUrl}}"], "path": ["api","defects","{{defect_id}}","comments","1"]}}}
+			]
+		},
+		{
+			"name": "Files",
+			"item": [
+				{"name": "Upload", "request": {"method": "POST", "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": []}, {"key": "defect_id", "value": "{{defect_id}}", "type": "text"}]}, "url": {"raw": "{{baseUrl}}/api/files/upload", "host": ["{{baseUrl}}"], "path": ["api","files","upload"]}}},
+				{"name": "Get Defect Files", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/files/defect/{{defect_id}}", "host": ["{{baseUrl}}"], "path": ["api","files","defect","{{defect_id}}"]}}},
+				{"name": "Download", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/files/download/1", "host": ["{{baseUrl}}"], "path": ["api","files","download","1"]}}},
+				{"name": "Delete", "request": {"method": "DELETE", "url": {"raw": "{{baseUrl}}/api/files/1", "host": ["{{baseUrl}}"], "path": ["api","files","1"]}}}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{"name": "Get Metrics", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/dashboard/{{project_id}}/metrics", "host": ["{{baseUrl}}"], "path": ["api","dashboard","{{project_id}}","metrics"]}}},
+				{"name": "Critical Defects", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/dashboard/{{project_id}}/critical-defects", "host": ["{{baseUrl}}"], "path": ["api","dashboard","{{project_id}}","critical-defects"]}}},
+				{"name": "Recent Actions", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/dashboard/{{project_id}}/recent-actions", "host": ["{{baseUrl}}"], "path": ["api","dashboard","{{project_id}}","recent-actions"]}}},
+				{"name": "All Actions", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/dashboard/{{project_id}}/all-actions", "host": ["{{baseUrl}}"], "path": ["api","dashboard","{{project_id}}","all-actions"]}}},
+				{"name": "Project Defects", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/dashboard/{{project_id}}/defects", "host": ["{{baseUrl}}"], "path": ["api","dashboard","{{project_id}}","defects"]}}}
+			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{"name": "Create Report", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"project_id\":1,\"title\":\"Report\",\"description\":\"Desc\",\"format\":\"excel\"}"}, "url": {"raw": "{{baseUrl}}/api/reports", "host": ["{{baseUrl}}"], "path": ["api","reports"]}}},
+				{"name": "Multi-Project Report", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"project_ids\":[1,2],\"title\":\"Multi\",\"format\":\"csv\"}"}, "url": {"raw": "{{baseUrl}}/api/reports", "host": ["{{baseUrl}}"], "path": ["api","reports"]}}},
+				{"name": "Get Reports", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/reports/project/{{project_id}}", "host": ["{{baseUrl}}"], "path": ["api","reports","project","{{project_id}}"]}}},
+				{"name": "Download", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/reports/1/download", "host": ["{{baseUrl}}"], "path": ["api","reports","1","download"]}}},
+				{"name": "Chart Data", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/reports/1/chart-data", "host": ["{{baseUrl}}"], "path": ["api","reports","1","chart-data"]}}}
+			]
+		},
+		{
+			"name": "Backup",
+			"item": [
+				{"name": "List", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/backup/list", "host": ["{{baseUrl}}"], "path": ["api","backup","list"]}}},
+				{"name": "Create", "request": {"method": "POST", "url": {"raw": "{{baseUrl}}/api/backup/create", "host": ["{{baseUrl}}"], "path": ["api","backup","create"]}}},
+				{"name": "Restore", "request": {"method": "POST", "url": {"raw": "{{baseUrl}}/api/backup/restore/backup.sql", "host": ["{{baseUrl}}"], "path": ["api","backup","restore","backup.sql"]}}},
+				{"name": "Status", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/backup/status", "host": ["{{baseUrl}}"], "path": ["api","backup","status"]}}}
+			]
+		}
+	]
+}

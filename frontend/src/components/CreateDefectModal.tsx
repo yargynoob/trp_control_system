@@ -160,7 +160,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId, userR
 
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('/api/defects/upload', {
+        const response = await fetch('/api/files/upload', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
