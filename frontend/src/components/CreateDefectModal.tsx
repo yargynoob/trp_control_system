@@ -426,11 +426,14 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId, userR
                 id="file-upload" />
 
               <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="w-8 h-8 text-[#6c757d] mx-auto mb-2">📎</div>
-                <p className="text-[#6c757d]">
-                  Перетащите файлы сюда или нажмите для выбора
-                </p>
-              </label>
+                  <div className="w-8 h-8 text-[#6c757d] mx-auto mb-2">🖼️</div>
+                  <p className="text-[#6c757d]">
+                    Нажмите для выбора изображений или перетащите их сюда
+                  </p>
+                  <p className="text-xs text-[#6c757d] mt-1">
+                    Поддерживаемые форматы: JPG, PNG, GIF, WEBP
+                  </p>
+                </label>
             </div>
 
             {attachedFiles.length > 0 &&
@@ -460,7 +463,7 @@ export function CreateDefectModal({ isOpen, onClose, onSuccess, projectId, userR
         </div>
 
         <div className="p-6 border-t border-[#dee2e6]">
-          <div className="flex items-center justify-between">
+          <div className="text-[#212529] flex items-center justify-between">
             <Button variant="outline" onClick={onClose} disabled={loading}>
               Отмена
             </Button>

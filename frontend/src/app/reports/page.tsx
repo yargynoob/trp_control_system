@@ -69,7 +69,7 @@ export default function AllReportsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/reports?projectId=0', {
+      const response = await fetch('/api/reports/project/0', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -86,7 +86,6 @@ export default function AllReportsPage() {
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
-      setError('Не удалось загрузить отчеты');
     } finally {
       setLoading(false);
     }
@@ -95,7 +94,11 @@ export default function AllReportsPage() {
   const handleDownload = async (reportId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/backend/reports/${reportId}/download?token=${token}`);
+      const response = await fetch(`/api/reports/${reportId}/download`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Failed to download report');
@@ -167,7 +170,7 @@ export default function AllReportsPage() {
           isSupervisorAnywhere={isSupervisor}
         />
 
-        <div className="bg-[#f8f9fa] min-h-screen">
+        <div className="bg-[#f8f9fa] min-h-screen mx-auto">
           <div className="container px-6 py-6">
             <div className="mb-6 flex items-center justify-between">
               <div>

@@ -30,7 +30,7 @@ interface Defect {
   id: string;
   title: string;
   description: string;
-  status: "new" | "in_progress" | "review" | "closed" | "cancelled";
+  status: "open" | "in_progress" | "resolved" | "closed" | "rejected";
   statusDisplay: string;
   priority: "low" | "medium" | "high" | "critical";
   priorityDisplay: string;
@@ -92,6 +92,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   
   const isEngineer = userRole === 'engineer';
   const isManager = userRole === 'manager';
@@ -110,10 +111,10 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
   
   const canEditStatus = (() => {
     if (isDefectClosed || isSupervisor) return false;
-    if (defect?.status === 'new' || defect?.status === 'in_progress') {
+    if (defect?.status === 'open' || defect?.status === 'in_progress') {
       return isEngineer || isManager;
     }
-    if (defect?.status === 'review') {
+    if (defect?.status === 'resolved') {
       return isManager;
     }
     return false;
@@ -124,24 +125,24 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
     
     const currentStatus = defect.status;
     
-    if (currentStatus === 'new') {
-      return ['new', 'in_progress'];
+    if (currentStatus === 'open') {
+      return ['open', 'in_progress'];
     }
     if (currentStatus === 'in_progress') {
-      return ['in_progress', 'review'];
+      return ['in_progress', 'resolved'];
     }
-    if (currentStatus === 'review' && isManager) {
-      return ['review', 'closed'];
+    if (currentStatus === 'resolved' && isManager) {
+      return ['resolved', 'closed'];
     }
     return [currentStatus];
   };
   
   const statusLabels: Record<string, string> = {
-    'new': 'Новый',
+    'open': 'Новый',
     'in_progress': 'В работе',
-    'review': 'На проверке',
+    'resolved': 'Решен',
     'closed': 'Закрыт',
-    'cancelled': 'Отменен'
+    'rejected': 'Отменен'
   };
 
   const filteredUsers = users.filter((user) =>
@@ -154,7 +155,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
     if (defect && isOpen) {
       setDescription(defect.description || "");
       setDueDate(defect.dueDate || "");
-      setStatus(defect.status || "new");
+      setStatus(defect.status || "open");
       setSearchQuery("");
       if (defect.assigneeId) {
         setAssigneeId(defect.assigneeId.toString());
@@ -167,6 +168,40 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
       fetchComments();
     }
   }, [defect, isOpen]);
+  
+  useEffect(() => {
+    const loadImages = async () => {
+      const token = localStorage.getItem('token');
+      if (!token || existingFiles.length === 0) return;
+      
+      const newImageUrls: Record<number, string> = {};
+      
+      for (const file of existingFiles) {
+        try {
+          const response = await fetch(`/api/files/download/${file.id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (response.ok) {
+            const blob = await response.blob();
+            newImageUrls[file.id] = URL.createObjectURL(blob);
+          }
+        } catch (error) {
+          console.error(`Error loading image ${file.id}:`, error);
+        }
+      }
+      
+      setImageUrls(newImageUrls);
+    };
+    
+    loadImages();
+    
+    return () => {
+      Object.values(imageUrls).forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [existingFiles]);
   
   const fetchPriorities = async () => {
     try {
@@ -367,7 +402,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
       formData.append('user_id', user?.id?.toString() || '1');
 
       try {
-        const response = await fetch('/api/defects/upload', {
+        const response = await fetch('/api/files/upload', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -467,7 +502,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
 
   return (
     <Dialog open={isOpen} onOpenChange={() => !loading && handleClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
+      <DialogContent className="max-w-2xl max-h-[90vh] min-w-[450px]">
         
         <div className="p-6 space-y-6">
           {error &&
@@ -479,7 +514,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
           {isDefectClosed && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
               <p className="text-sm text-blue-700 font-medium">
-                ℹ️ Этот дефект закрыт и больше не может быть изменён. Доступен только просмотр.
+                Этот дефект закрыт и больше не может быть изменён. Доступен только просмотр.
               </p>
             </div>
           )}
@@ -487,7 +522,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
           <div className="space-y-4">
             {/* Неизменяемая информация */}
             <div className="p-4 bg-[#f8f9fa] border border-[#dee2e6] rounded-md">
-              <h4 className="text-sm font-medium text-[#212529] mb-2">Основная информация (не редактируется)</h4>
+              <h4 className="text-sm font-medium text-[#212529] mb-2">Основная информация</h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-[#6c757d]">Название:</span>
@@ -524,7 +559,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
             {/* Статус - для всех ролей */}
             <div>
               <Label className="text-sm font-medium text-[#212529]">
-                Статус {isDefectClosed && '(дефект закрыт)'}
+                Статус
               </Label>
               {canEditStatus ? (
                 <select
@@ -539,7 +574,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                   ))}
                 </select>
               ) : (
-                <div className="mt-1 p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
+                <div className="text-[#212529] mt-1 p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
                   {statusLabels[defect.status] || defect.statusDisplay}
                 </div>
               )}
@@ -583,7 +618,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                       ))}
                     </select>
                   ) : (
-                    <div className="mt-1 p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
+                    <div className="text-[#212529] mt-1 p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
                       {defect.priorityDisplay}
                     </div>
                   )}
@@ -593,7 +628,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                 <div>
                   <Label className="text-sm font-medium text-[#212529]">Ответственный</Label>
                   {canEditAssignee ? (
-                    <div className="mt-1 space-y-2">
+                    <div className="mt-1 space-y-2 ">
                       {!assigneeId && (
                         <Input
                           placeholder="Поиск исполнителя..."
@@ -604,7 +639,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                       )}
                       
                       {assigneeId ? (
-                        <div className="p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md flex items-center justify-between">
+                        <div className="text-[#212529] p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md flex items-center justify-between">
                           <span className="text-sm">
                             {(() => {
                               const selectedUser = users.find((u) => u.id.toString() === assigneeId);
@@ -624,7 +659,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                         </div>
                       ) : (
                         <div 
-                          className="border border-[#dee2e6] rounded-md scrollbar-hide" 
+                          className="text-[#212529] border border-[#dee2e6] rounded-md scrollbar-hide" 
                           style={{ maxHeight: '120px', overflowY: 'scroll', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                         >
                           {filteredUsers.length === 0 && (
@@ -635,14 +670,14 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                           {filteredUsers.slice(0, 5).map((user) => (
                             <div
                               key={user.id}
-                              className="flex items-center justify-between p-2 border-b border-[#f8f9fa] last:border-b-0 cursor-pointer hover:bg-[#f8f9fa]"
+                              className="text-[#212529] flex items-center justify-between p-2 border-b border-[#f8f9fa] last:border-b-0 cursor-pointer hover:bg-[#f8f9fa]"
                               onClick={() => {
                                 setAssigneeId(user.id);
                                 setSearchQuery('');
                               }}
                             >
                               <div>
-                                <div className="text-xs font-medium text-[#212529]">
+                                <div className="text-[#212529] text-xs font-medium text-[#212529]">
                                   {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
                                 </div>
                                 <div className="text-xs text-[#6c757d]">{user.email}</div>
@@ -653,7 +688,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                       )}
                     </div>
                   ) : (
-                    <div className="mt-1 p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
+                    <div className="mt-1 p-2 text-[#212529]  bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
                       {defect.assignee || 'Не назначен'}
                     </div>
                   )}
@@ -671,7 +706,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                       className="mt-1 bg-white border-[#ced4da]"
                     />
                   ) : (
-                    <div className="mt-1 p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
+                    <div className="text-[#212529] mt-1 p-2 bg-[#f8f9fa] border border-[#dee2e6] rounded-md text-sm">
                       {defect.dueDate ? new Date(defect.dueDate).toLocaleDateString('ru-RU') : 'Не указан'}
                     </div>
                   )}
@@ -689,18 +724,21 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {existingFiles.map((file) => {
-                  const token = localStorage.getItem('token');
-                  const imageUrl = token 
-                    ? `/api/files/download/${file.id}?token=${encodeURIComponent(token)}`
-                    : `/api/files/download/${file.id}`;
+                  const imageUrl = imageUrls[file.id];
                   
                   return (
                     <div key={file.id} className="relative group border border-[#dee2e6] rounded-md overflow-hidden">
-                      <img
-                        src={imageUrl}
-                        alt={file.original_name}
-                        className="w-full h-40 object-cover"
-                      />
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={file.original_name}
+                          className="w-full h-40 object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500">Loading...</span>
+                        </div>
+                      )}
                     <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-2">
                       <div className="text-xs truncate">{file.original_name}</div>
                       <div className="text-xs text-gray-300">{formatFileSize(file.file_size)}</div>
@@ -782,24 +820,27 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
           {/* Просмотр вложений для руководителя */}
           {isSupervisor && existingFiles.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-[16px] font-semibold text-[#212529] border-b border-[#dee2e6] pb-2">
+              <h3 className="mx-auto text-[16px] font-semibold text-[#212529] border-b border-[#dee2e6] pb-2">
                 ЗАГРУЖЕННЫЕ ИЗОБРАЖЕНИЯ (только просмотр)
               </h3>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {existingFiles.map((file) => {
-                  const token = localStorage.getItem('token');
-                  const imageUrl = token 
-                    ? `/api/files/download/${file.id}?token=${encodeURIComponent(token)}`
-                    : `/api/files/download/${file.id}`;
+                  const imageUrl = imageUrls[file.id];
                   
-                  return (
+                  return ( 
                     <div key={file.id} className="relative border border-[#dee2e6] rounded-md overflow-hidden">
-                      <img
-                        src={imageUrl}
-                        alt={file.original_name}
-                        className="w-full h-40 object-cover"
-                      />
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={file.original_name}
+                          className="w-full h-40 object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500">Loading...</span>
+                        </div>
+                      )}
                       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-2">
                         <div className="text-xs truncate">{file.original_name}</div>
                         <div className="text-xs text-gray-300">{formatFileSize(file.file_size)}</div>
@@ -807,6 +848,8 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
                     </div>
                   );
                 })}
+
+
               </div>
             </div>
           )}
@@ -893,7 +936,7 @@ export function EditDefectModal({ isOpen, onClose, onSuccess, defect, userRole, 
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 p-6 border-t border-[#dee2e6]">
+        <div className="flex justify-end space-x-3 p-6 border-t border-[#dee2e6] text-[#212529]">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             {isReadOnly ? 'Закрыть' : 'Отмена'}
           </Button>

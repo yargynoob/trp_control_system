@@ -7,13 +7,18 @@ export async function GET(
 ) {
   try {
     const authHeader = request.headers.get('authorization');
-    const { searchParams } = new URL(request.url);
-    const token = searchParams.get('token') || authHeader?.replace('Bearer ', '');
+    
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Authorization required' },
+        { status: 401 }
+      );
+    }
     
     const response = await fetch(getBackendUrl(`files/download/${params.id}`), {
       method: 'GET',
       headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` }),
+        'Authorization': authHeader,
       },
     });
 

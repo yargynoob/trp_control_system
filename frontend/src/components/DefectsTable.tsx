@@ -10,7 +10,7 @@ interface Defect {
   id: string;
   title: string;
   description: string;
-  status: "new" | "in_progress" | "review" | "closed" | "cancelled";
+  status: "open" | "in_progress" | "resolved" | "closed" | "rejected";
   statusDisplay: string;
   priority: "low" | "medium" | "high" | "critical";
   priorityDisplay: string;
@@ -25,11 +25,11 @@ interface Defect {
 
 interface FilterState {
   status: {
-    new: boolean;
+    open: boolean;
     in_progress: boolean;
-    review: boolean;
+    resolved: boolean;
     closed: boolean;
-    cancelled: boolean;
+    rejected: boolean;
   };
   priority: {
     low: boolean;
@@ -53,11 +53,11 @@ interface DefectsTableProps {
 }
 
 const statusColors = {
-  new: "bg-[#6c757d] text-white",
-  in_progress: "bg-[#007bff] text-white",
-  review: "bg-[#ffc107] text-[#212529]",
-  closed: "bg-[#28a745] text-white",
-  cancelled: "bg-[#dc3545] text-white"
+  open: "bg-[#dc3545] text-white",
+  in_progress: "bg-[#ffc107] text-[#212529]",
+  resolved: "bg-[#28a745] text-white",
+  closed: "bg-[#6c757d] text-white",
+  rejected: "bg-[#6c757d] text-white"
 };
 
 const priorityColors = {
@@ -68,9 +68,11 @@ const priorityColors = {
 };
 
 const statusDisplayMapping: { [key: string]: string } = {
-  "Новая": "Новый",
-  "Закрыта": "Закрыт", 
-  "Отменена": "Отменен"
+  "open": "open",
+  "in_progress": "in_progress",
+  "resolved": "resolved",
+  "closed": "closed",
+  "rejected": "rejected"
 };
 
 export function DefectsTable({ 
@@ -124,7 +126,6 @@ export function DefectsTable({
   }, [projectId, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo, refreshKey]);
 
   const handleDefectClick = (defect: Defect) => {
-    // Everyone can view defects, even supervisors (they just can't edit)
     setSelectedDefect(defect);
     setIsEditModalOpen(true);
   };

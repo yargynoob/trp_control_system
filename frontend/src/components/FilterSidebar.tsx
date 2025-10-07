@@ -7,11 +7,11 @@ import { Input } from "./ui/input";
 
 interface FilterState {
   status: {
-    new: boolean;
+    open: boolean;
     in_progress: boolean;
-    review: boolean;
+    resolved: boolean;
     closed: boolean;
-    cancelled: boolean;
+    rejected: boolean;
   };
   priority: {
     low: boolean;
@@ -61,11 +61,11 @@ export function FilterSidebar({
   const clearAllFilters = () => {
     onFiltersChange({
       status: {
-        new: false,
+        open: false,
         in_progress: false,
-        review: false,
+        resolved: false,
         closed: false,
-        cancelled: false,
+        rejected: false,
       },
       priority: {
         low: false,
@@ -79,11 +79,11 @@ export function FilterSidebar({
   const selectAllFilters = () => {
     onFiltersChange({
       status: {
-        new: true,
+        open: true,
         in_progress: true,
-        review: true,
+        resolved: true,
         closed: true,
-        cancelled: true,
+        rejected: true,
       },
       priority: {
         low: true,
@@ -126,12 +126,12 @@ export function FilterSidebar({
           <div className="space-y-1.5 lg:space-y-2">
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="status-new"
-                checked={filters.status.new}
-                onCheckedChange={(checked) => handleStatusChange('new', checked as boolean)}
+                id="status-open"
+                checked={filters.status.open}
+                onCheckedChange={(checked) => handleStatusChange('open', checked as boolean)}
                 className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
               />
-              <label htmlFor="status-new" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
+              <label htmlFor="status-open" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
                 Новый
               </label>
             </div>
@@ -150,13 +150,13 @@ export function FilterSidebar({
 
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="status-review"
-                checked={filters.status.review}
-                onCheckedChange={(checked) => handleStatusChange('review', checked as boolean)}
+                id="status-resolved"
+                checked={filters.status.resolved}
+                onCheckedChange={(checked) => handleStatusChange('resolved', checked as boolean)}
                 className="h-3 w-3 lg:h-4 lg:w-4 data-[state=checked]:bg-[#007bff] data-[state=checked]:text-white border-[#007bff]"
               />
-              <label htmlFor="status-review" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
-                На проверке
+              <label htmlFor="status-resolved" className="text-xs lg:text-sm text-[#212529] cursor-pointer">
+                Решен
               </label>
             </div>
 

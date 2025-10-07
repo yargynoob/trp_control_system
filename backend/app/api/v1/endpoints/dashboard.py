@@ -407,7 +407,7 @@ def get_project_defects(
     result = []
     for defect in defects:
         result.append({
-            "id": defect.id,
+            "id": str(defect.id),
             "title": defect.title,
             "description": defect.description,
             "status": defect.status.name,

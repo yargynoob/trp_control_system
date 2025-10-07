@@ -19,11 +19,11 @@ import { CreateDefectModal } from "./CreateDefectModal";
 
 interface FilterState {
   status: {
-    new: boolean;
+    open: boolean;
     in_progress: boolean;
-    review: boolean;
+    resolved: boolean;
     closed: boolean;
-    cancelled: boolean;
+    rejected: boolean;
   };
   priority: {
     low: boolean;
@@ -51,11 +51,11 @@ export function DefectsList({ projectId, canCreateDefect = true, userRole }: Def
 
   const [filters, setFilters] = useState<FilterState>({
     status: {
-      new: true,
+      open: true,
       in_progress: true,
-      review: true,
+      resolved: true,
       closed: true,
-      cancelled: true,
+      rejected: true,
     },
     priority: {
       low: true,
@@ -105,11 +105,11 @@ export function DefectsList({ projectId, canCreateDefect = true, userRole }: Def
       setFilters(prev => ({
         ...prev,
         status: {
-          new: true,
+          open: true,
           in_progress: true,
-          review: true,
+          resolved: true,
           closed: true,
-          cancelled: true,
+          rejected: true,
         }
       }));
     }
